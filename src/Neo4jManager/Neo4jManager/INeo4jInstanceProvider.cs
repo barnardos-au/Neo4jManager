@@ -8,5 +8,7 @@ namespace Neo4jManager
     {
         void Start();
         void Stop();
+
+        Neo4jEndpoints Endpoints { get; }
     }
 }

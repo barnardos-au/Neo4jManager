@@ -7,23 +7,51 @@ namespace Neo4jManager
     internal class Program
     {
         private const string JavaPath = @"C:\Program Files\Java\jre1.8.0_131\bin\java.exe";
-        private const string Neo4jHomeFolder = @"C:\neo4j\neo4j-community-3.1.3-windows\neo4j-community-3.1.3";
 
         private static void Main()
+        {
+            var instance1 = GetInstance1();
+            var instance2 = GetInstance2();
+
+
+            instance1.Start();
+            instance1.WaitForReady().Wait();
+            instance2.Start();
+            instance2.WaitForReady().Wait();
+            instance1.Stop();
+            instance2.Stop();
+            instance1.Dispose();
+            instance2.Dispose();
+        }
+
+        private static INeo4jInstanceProvider GetInstance1()
         {
             var options = new Neo4jOptions
             {
                 HeapInitialSize = "2048m",
-                HeapMaxSize = "4096m"
+                HeapMaxSize = "4096m",
+                Endpoints = { HttpEndpoint = new Uri("http://localhost:7474/") }
             };
             options.Parameters.Add("file.encoding", "UTF-8");
 
-            using (var instance = new JavaInstanceProvider(JavaPath, Neo4jHomeFolder, options))
+            var builder = new JavaProcessBuilderV3(JavaPath, @"C:\temp\neo4j\1\neo4j-community-3.2.0", options);
+
+            return new JavaInstanceProviderV3(builder, options);
+        }
+
+        private static INeo4jInstanceProvider GetInstance2()
+        {
+            var options = new Neo4jOptions
             {
-                instance.Start();
-                Console.WriteLine("Done");
-                Console.ReadLine();
-            }
+                HeapInitialSize = "2048m",
+                HeapMaxSize = "4096m",
+                Endpoints = { HttpEndpoint = new Uri("http://localhost:7476/") }
+            };
+            options.Parameters.Add("file.encoding", "UTF-8");
+
+            var builder = new JavaProcessBuilderV3(JavaPath, @"C:\temp\neo4j\2\neo4j-community-3.2.0", options);
+
+            return new JavaInstanceProviderV3(builder, options);
         }
     }
 }

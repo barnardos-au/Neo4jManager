@@ -5,40 +5,23 @@ using System.Text;
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class JavaInstanceProvider : INeo4jInstanceProvider
+    public class JavaProcessBuilderV3 : IJavaProcessBuilder
     {
         private readonly string javaPath;
-        private readonly string neo4JHomeFolder;
+        private readonly string neo4jHomeFolder;
         private readonly Neo4jOptions options;
         private const string quotes = "\"";
 
-        private Process process;
-
-        public JavaInstanceProvider(string javaPath, string neo4jHomeFolder, Neo4jOptions options)
+        public JavaProcessBuilderV3(string javaPath, string neo4jHomeFolder, Neo4jOptions options)
         {
             this.javaPath = javaPath;
-            neo4JHomeFolder = neo4jHomeFolder;
+            this.neo4jHomeFolder = neo4jHomeFolder;
             this.options = options;
         }
 
-        public void Start()
+        public Process GetProcess()
         {
-            var currentProcess = GetProcess();
-            currentProcess.Start();
-        }
-
-        public void Stop()
-        {
-            var currentProcess = GetProcess();
-            currentProcess.Kill();
-        }
-
-        private Process GetProcess()
-        {
-            if (process != null) return process;
-
-            process = new Process {StartInfo = GetProcessStartInfo()};
-            return process;
+            return new Process { StartInfo = GetProcessStartInfo() };
         }
 
         private ProcessStartInfo GetProcessStartInfo()
@@ -61,7 +44,7 @@ namespace Neo4jManager
             builder
                 .Append(" -cp ")
                 .Append(quotes)
-                .Append($"{neo4JHomeFolder}/lib/*;{neo4JHomeFolder}/plugins/*")
+                .Append($"{neo4jHomeFolder}/lib/*;{neo4jHomeFolder}/plugins/*")
                 .Append(quotes);
             builder.Append(" -server");
             builder.Append(" -XX:+UseG1GC");
@@ -88,13 +71,13 @@ namespace Neo4jManager
                 .Append(" org.neo4j.server.CommunityEntryPoint")
                 .Append(" --config-dir=")
                 .Append(quotes)
-                .Append($@"{neo4JHomeFolder}\conf")
+                .Append($@"{neo4jHomeFolder}\conf")
                 .Append(quotes)
                 .Append(" --home-dir=")
                 .Append(quotes)
-                .Append(neo4JHomeFolder)
+                .Append(neo4jHomeFolder)
                 .Append(quotes);
-                
+
             return builder.ToString();
         }
 
@@ -124,16 +107,6 @@ namespace Neo4jManager
             {
                 options.Parameters.Add("unsupported.dbms.udc.source", "zip");
             }
-        }
-
-        public void Dispose()
-        {
-            if (process != null && !process.HasExited)
-            {
-                process.Kill();
-            }
-
-            process?.Dispose();
         }
     }
 }

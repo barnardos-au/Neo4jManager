@@ -9,11 +9,14 @@ namespace Neo4jManager
         public Neo4jOptions()
         {
             Parameters = new Dictionary<string, string>();
+            Endpoints = new Neo4jEndpoints();
         }
 
         public string HeapInitialSize { get; set; }
         public string HeapMaxSize { get; set; }
         public string PageCacheSize { get; set; }
+
+        public Neo4jEndpoints Endpoints { get; set; }
         public Dictionary<string, string> Parameters { get; }
     }
 }
