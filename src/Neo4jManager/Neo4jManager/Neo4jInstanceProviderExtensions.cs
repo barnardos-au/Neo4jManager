@@ -50,5 +50,11 @@ namespace Neo4jManager
                 await Task.Delay(1000);
             }
         }
+
+        public static void Restart(this INeo4jInstanceProvider instance)
+        {
+            instance.Stop();
+            instance.Start();
+        }
     }
 }

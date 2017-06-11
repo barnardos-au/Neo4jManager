@@ -1,20 +1,30 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class JavaInstanceProviderV3 : INeo4jInstanceProvider
     {
-        private readonly IJavaProcessBuilder javaProcessBuilder;
-        private readonly Neo4jOptions options;
+        private const string defaultDataDirectory = "data/databases";
+        private const string defaultActiveDatabase = "graph.db";
+
+        private readonly string neo4jHomeFolder;
+        private readonly JavaProcessBuilderV3 javaProcessBuilder;
+        private readonly ConfigEditor configEditor;
 
         private Process process;
 
-        public JavaInstanceProviderV3(IJavaProcessBuilder javaProcessBuilder, Neo4jOptions options)
+        public JavaInstanceProviderV3(string javaPath, string neo4jHomeFolder, Neo4jEndpoints endpoints)
         {
-            this.javaProcessBuilder = javaProcessBuilder;
-            this.options = options;
+            this.neo4jHomeFolder = neo4jHomeFolder;
+
+            var configFile = Path.Combine(neo4jHomeFolder, "conf/neo4j.conf");
+            configEditor = new ConfigEditor(configFile);
+
+            javaProcessBuilder = new JavaProcessBuilderV3(javaPath, neo4jHomeFolder, configEditor);
+            Endpoints = endpoints;
         }
 
         public void Start()
@@ -37,7 +47,29 @@ namespace Neo4jManager
             process.Kill();
         }
 
-        public Neo4jEndpoints Endpoints => options.Endpoints;
+        public void Configure(string key, string value)
+        {
+            configEditor.SetValue(key, value);
+        }
+
+        public void Clear()
+        {
+            var dataDirectory = configEditor.GetValue("dbms.directories.data");
+            if (string.IsNullOrEmpty(dataDirectory))
+                dataDirectory = defaultDataDirectory;
+
+            var activeDatabase = configEditor.GetValue("dbms.active_database");
+            if (string.IsNullOrEmpty(activeDatabase))
+                activeDatabase = defaultActiveDatabase;
+
+            var dataPath = Path.Combine(neo4jHomeFolder, dataDirectory, activeDatabase);
+
+            Stop();
+            Directory.Delete(dataPath);
+            Start();
+        }
+
+        public Neo4jEndpoints Endpoints { get; }
 
         public void Dispose()
         {

@@ -8,6 +8,8 @@ namespace Neo4jManager
     {
         void Start();
         void Stop();
+        void Configure(string key, string value);
+        void Clear();
 
         Neo4jEndpoints Endpoints { get; }
     }
