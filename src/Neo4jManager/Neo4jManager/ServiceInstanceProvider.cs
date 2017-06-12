@@ -1,44 +1,40 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class ServiceInstanceProvider : INeo4jInstanceProvider
+    public class ServiceInstanceProvider : Neo4jProcessBasedInstanceProvider, INeo4jInstanceProvider
     {
-        private const string quotes = "\"";
-
-        private const string defaultDataDirectory = "data/databases";
-        private const string defaultActiveDatabase = "graph.db";
-
-        private readonly string neo4jHomeFolder;
-        private readonly IFileCopy fileCopy;
-        private readonly ConfigEditor configEditor;
-
-        public ServiceInstanceProvider(string neo4jHomeFolder, Neo4jEndpoints endpoints, IFileCopy fileCopy)
+        public ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
+            :base(neo4jHomeFolder, fileCopy, endpoints)
         {
-            this.neo4jHomeFolder = neo4jHomeFolder;
-            this.fileCopy = fileCopy;
-
-            var configFile = Path.Combine(neo4jHomeFolder, "conf/neo4j.conf");
-            configEditor = new ConfigEditor(configFile);
-
-            Endpoints = endpoints;
         }
 
-        public async Task Start()
+        public override async Task Start()
         {
             await InstallService();
             await StartService();
         }
 
-        public async Task Stop()
+        public override async Task Stop()
         {
             await StopService();
             await UninstallService();
+        }
+
+        public override async Task Restart()
+        {
+            await StopService();
+            await StartService();
+        }
+
+        public void Dispose()
+        {
+            Stop().Wait();
         }
 
         private async Task InstallService()
@@ -91,56 +87,11 @@ namespace Neo4jManager
             });
         }
 
-        public void Configure(string key, string value)
+        protected override async Task StopWhile(Action action)
         {
-            configEditor.SetValue(key, value);
-        }
-
-        public async Task Clear()
-        {
-            var dataPath = GetDataPath();
-
-            await Stop();
-            Directory.Delete(dataPath);
-            await Start();
-        }
-
-        public async Task Backup(string destinationPath, bool stopInstanceBeforeBackup = true)
-        {
-            var dataPath = GetDataPath();
-
-            if (stopInstanceBeforeBackup) await StopService();
-            fileCopy.MirrorFolders(dataPath, destinationPath);
-            if (stopInstanceBeforeBackup) await StartService();
-        }
-
-        public async Task Restore(string sourcePath)
-        {
-            var dataPath = GetDataPath();
-
             await StopService();
-            fileCopy.MirrorFolders(sourcePath, dataPath);
+            await Task.Run(action);
             await StartService();
-        }
-
-        public Neo4jEndpoints Endpoints { get; }
-
-        public void Dispose()
-        {
-            Stop().Wait();
-        }
-
-        private string GetDataPath()
-        {
-            var dataDirectory = configEditor.GetValue("dbms.directories.data");
-            if (string.IsNullOrEmpty(dataDirectory))
-                dataDirectory = defaultDataDirectory;
-
-            var activeDatabase = configEditor.GetValue("dbms.active_database");
-            if (string.IsNullOrEmpty(activeDatabase))
-                activeDatabase = defaultActiveDatabase;
-
-            return Path.Combine(neo4jHomeFolder, dataDirectory, activeDatabase);
         }
 
         private Process GetProcess(string command)
@@ -171,6 +122,5 @@ namespace Neo4jManager
 
             return builder.ToString();
         }
-
     }
 }

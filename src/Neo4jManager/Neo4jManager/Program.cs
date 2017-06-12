@@ -30,7 +30,7 @@ namespace Neo4jManager
             };
             //return new JavaInstanceProviderV3(JavaPath, @"C:\temp\neo4j\1\neo4j-community-3.2.0", endpoints, new FileCopy());
             //return new PowerShellInstanceProvider( @"C:\temp\neo4j\1\neo4j-community-3.2.0", endpoints, new FileCopy());
-            return new ServiceInstanceProvider(@"C:\temp\neo4j\1\neo4j-community-3.2.0", endpoints, new FileCopy());
+            return new ServiceInstanceProvider(@"C:\temp\neo4j\1\neo4j-community-3.2.0", new FileCopy(), endpoints);
         }
 
         private static INeo4jInstanceProvider GetInstance2()
@@ -40,7 +40,7 @@ namespace Neo4jManager
                 HttpEndpoint = new Uri("http://localhost:7476")
             };
 
-            return new ServiceInstanceProvider(@"C:\temp\neo4j\2\neo4j-community-3.2.0", endpoints, new FileCopy());
+            return new ServiceInstanceProvider(@"C:\temp\neo4j\2\neo4j-community-3.2.0", new FileCopy(), endpoints);
         }
 
         private static async Task Process(INeo4jInstanceProvider instance)

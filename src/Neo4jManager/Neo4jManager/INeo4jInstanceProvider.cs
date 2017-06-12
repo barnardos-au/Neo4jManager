@@ -9,11 +9,12 @@ namespace Neo4jManager
     {
         Task Start();
         Task Stop();
-        void Configure(string key, string value);
+        Task Restart();
         Task Clear();
         Task Backup(string destinationPath, bool stopInstanceBeforeBackup = true);
         Task Restore(string sourcePath);
-        
+        void Configure(string key, string value);
+
         Neo4jEndpoints Endpoints { get; }
     }
 }
