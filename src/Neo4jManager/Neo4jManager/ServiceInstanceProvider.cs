@@ -143,7 +143,7 @@ namespace Neo4jManager
             return Path.Combine(neo4jHomeFolder, dataDirectory, activeDatabase);
         }
 
-        public Process GetProcess(string command)
+        private Process GetProcess(string command)
         {
             return new Process
             {
