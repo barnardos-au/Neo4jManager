@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Neo4jManager
@@ -8,26 +10,27 @@ namespace Neo4jManager
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class JavaInstanceProviderV3 : INeo4jInstanceProvider
     {
+        private const string quotes = "\"";
         private const string defaultDataDirectory = "data/databases";
         private const string defaultActiveDatabase = "graph.db";
         private const int defaultWaitForKill = 10000;
 
+        private readonly string javaPath;
         private readonly string neo4jHomeFolder;
         private readonly IFileCopy fileCopy;
-        private readonly JavaProcessBuilderV3 javaProcessBuilder;
         private readonly ConfigEditor configEditor;
 
         private Process process;
 
         public JavaInstanceProviderV3(string javaPath, string neo4jHomeFolder, Neo4jEndpoints endpoints, IFileCopy fileCopy)
         {
+            this.javaPath = javaPath;
             this.neo4jHomeFolder = neo4jHomeFolder;
             this.fileCopy = fileCopy;
 
             var configFile = Path.Combine(neo4jHomeFolder, "conf/neo4j.conf");
             configEditor = new ConfigEditor(configFile);
 
-            javaProcessBuilder = new JavaProcessBuilderV3(javaPath, neo4jHomeFolder, configEditor);
             Endpoints = endpoints;
         }
 
@@ -35,7 +38,7 @@ namespace Neo4jManager
         {
             if (process == null)
             {
-                process = javaProcessBuilder.GetProcess();
+                process = GetProcess();
                 process.Start();
                 await this.WaitForReady();
 
@@ -111,6 +114,68 @@ namespace Neo4jManager
                 activeDatabase = defaultActiveDatabase;
 
             return Path.Combine(neo4jHomeFolder, dataDirectory, activeDatabase);
+        }
+
+        private Process GetProcess()
+        {
+            return new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = javaPath,
+                    Arguments = GetJavaCmdArguments()
+                }
+            };
+        }
+
+        private string GetJavaCmdArguments()
+        {
+            var builder = new StringBuilder();
+
+            builder
+                .Append(" -cp ")
+                .Append(quotes)
+                .Append($"{neo4jHomeFolder}/lib/*;{neo4jHomeFolder}/plugins/*")
+                .Append(quotes);
+
+            builder.Append(" -server");
+
+            builder.Append(" -Dlog4j.configuration=file:conf/log4j.properties");
+            builder.Append(" -Dneo4j.ext.udc.source=zip-powershell");
+            builder.Append(" -Dorg.neo4j.cluster.logdirectory=data/log");
+
+            var jvmAdditionalParams = configEditor
+                .FindValues("dbms.jvm.additional")
+                .Select(p => p.Value);
+
+            foreach (var param in jvmAdditionalParams)
+            {
+                builder.Append($" {param}");
+            }
+
+            var heapInitialSize = configEditor.GetValue("dbms.memory.heap.initial_size");
+            if (!string.IsNullOrEmpty(heapInitialSize))
+            {
+                builder.Append($" -Xms{heapInitialSize}");
+            }
+            var heapMaxSize = configEditor.GetValue("dbms.memory.heap.max_size");
+            if (!string.IsNullOrEmpty(heapMaxSize))
+            {
+                builder.Append($" -Xmx{heapMaxSize}");
+            }
+
+            builder
+                .Append(" org.neo4j.server.CommunityEntryPoint")
+                .Append(" --config-dir=")
+                .Append(quotes)
+                .Append($@"{neo4jHomeFolder}\conf")
+                .Append(quotes)
+                .Append(" --home-dir=")
+                .Append(quotes)
+                .Append(neo4jHomeFolder)
+                .Append(quotes);
+
+            return builder.ToString();
         }
     }
 }
