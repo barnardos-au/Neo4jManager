@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace Neo4jManager
 {
@@ -12,14 +13,11 @@ namespace Neo4jManager
         {
             var instance1 = GetInstance1();
             var instance2 = GetInstance2();
+            var task1 = Process(instance1);
+            var task2 = Process(instance2);
 
+            Task.WhenAll(task1, task2).Wait();
 
-            instance1.Start();
-            instance1.WaitForReady().Wait();
-            instance2.Start();
-            instance2.WaitForReady().Wait();
-            instance1.Stop();
-            instance2.Stop();
             instance1.Dispose();
             instance2.Dispose();
         }
@@ -31,7 +29,9 @@ namespace Neo4jManager
                 BoltEndpoint = new Uri("bolt://localhost:7687"),
                 HttpEndpoint = new Uri("http://localhost:7474")
             };
-            return new JavaInstanceProviderV3(JavaPath, @"C:\temp\neo4j\1\neo4j-community-3.2.0", endpoints);
+            //return new JavaInstanceProviderV3(JavaPath, @"C:\temp\neo4j\1\neo4j-community-3.2.0", endpoints, new FileCopy());
+            //return new PowerShellInstanceProvider( @"C:\temp\neo4j\1\neo4j-community-3.2.0", endpoints, new FileCopy());
+            return new ServiceInstanceProvider(@"C:\temp\neo4j\1\neo4j-community-3.2.0", endpoints, new FileCopy());
         }
 
         private static INeo4jInstanceProvider GetInstance2()
@@ -42,7 +42,14 @@ namespace Neo4jManager
                 HttpEndpoint = new Uri("http://localhost:7476")
             };
 
-            return new JavaInstanceProviderV3(JavaPath, @"C:\temp\neo4j\2\neo4j-community-3.2.0", endpoints);
+            return new ServiceInstanceProvider(@"C:\temp\neo4j\2\neo4j-community-3.2.0", endpoints, new FileCopy());
+        }
+
+        private static async Task Process(INeo4jInstanceProvider instance)
+        {
+            await instance.Start();
+            //await instance.Backup(@"C:\temp\backup");
+            //await instance.Restore(@"C:\temp\backup");
         }
     }
 }

@@ -1,25 +1,26 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class JavaInstanceProviderV3 : INeo4jInstanceProvider
+    public class PowerShellInstanceProvider : INeo4jInstanceProvider
     {
+        private const string quotes = "\"";
         private const string defaultDataDirectory = "data/databases";
         private const string defaultActiveDatabase = "graph.db";
         private const int defaultWaitForKill = 10000;
 
         private readonly string neo4jHomeFolder;
         private readonly IFileCopy fileCopy;
-        private readonly JavaProcessBuilderV3 javaProcessBuilder;
         private readonly ConfigEditor configEditor;
 
         private Process process;
 
-        public JavaInstanceProviderV3(string javaPath, string neo4jHomeFolder, Neo4jEndpoints endpoints, IFileCopy fileCopy)
+        public PowerShellInstanceProvider(string neo4jHomeFolder, Neo4jEndpoints endpoints, IFileCopy fileCopy)
         {
             this.neo4jHomeFolder = neo4jHomeFolder;
             this.fileCopy = fileCopy;
@@ -27,7 +28,6 @@ namespace Neo4jManager
             var configFile = Path.Combine(neo4jHomeFolder, "conf/neo4j.conf");
             configEditor = new ConfigEditor(configFile);
 
-            javaProcessBuilder = new JavaProcessBuilderV3(javaPath, neo4jHomeFolder, configEditor);
             Endpoints = endpoints;
         }
 
@@ -35,7 +35,7 @@ namespace Neo4jManager
         {
             if (process == null)
             {
-                process = javaProcessBuilder.GetProcess();
+                process = GetProcess();
                 process.Start();
                 await this.WaitForReady();
 
@@ -43,7 +43,7 @@ namespace Neo4jManager
             }
 
             if (!process.HasExited) return;
-            
+
             process.Start();
             await this.WaitForReady();
         }
@@ -111,6 +111,35 @@ namespace Neo4jManager
                 activeDatabase = defaultActiveDatabase;
 
             return Path.Combine(neo4jHomeFolder, dataDirectory, activeDatabase);
+        }
+
+        public Process GetProcess()
+        {
+            return new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "POWERSHELL.EXE",
+                    Arguments = GetPowerShellArguments()
+                }
+            };
+        }
+
+        private string GetPowerShellArguments()
+        {
+            var builder = new StringBuilder();
+
+            builder
+                .Append(" -NoProfile")
+                .Append(" -NonInteractive")
+                .Append(" -NoLogo")
+                .Append(" -ExecutionPolicy Bypass")
+                .Append(" -Command ")
+                .Append(quotes)
+                .Append($@"Import-Module '{neo4jHomeFolder}\bin\Neo4j-Management.psd1'; Exit (Invoke-Neo4j Console)")
+                .Append(quotes);
+
+            return builder.ToString();
         }
     }
 }
