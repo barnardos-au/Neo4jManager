@@ -26,7 +26,6 @@ namespace Neo4jManager
         {
             var endpoints = new Neo4jEndpoints
             {
-                BoltEndpoint = new Uri("bolt://localhost:7687"),
                 HttpEndpoint = new Uri("http://localhost:7474")
             };
             //return new JavaInstanceProviderV3(JavaPath, @"C:\temp\neo4j\1\neo4j-community-3.2.0", endpoints, new FileCopy());
@@ -38,7 +37,6 @@ namespace Neo4jManager
         {
             var endpoints = new Neo4jEndpoints
             {
-                BoltEndpoint = new Uri("bolt://localhost:7688"),
                 HttpEndpoint = new Uri("http://localhost:7476")
             };
 
@@ -47,9 +45,10 @@ namespace Neo4jManager
 
         private static async Task Process(INeo4jInstanceProvider instance)
         {
+            var port = instance.Endpoints.HttpEndpoint.Port;
             await instance.Start();
-            //await instance.Backup(@"C:\temp\backup");
-            //await instance.Restore(@"C:\temp\backup");
+            await instance.Backup($@"C:\temp\backup\{port}");
+            await instance.Restore($@"C:\temp\backup\{port}");
         }
     }
 }

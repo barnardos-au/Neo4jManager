@@ -31,6 +31,18 @@ namespace Neo4jManager
 
         public async Task Start()
         {
+            await InstallService();
+            await StartService();
+        }
+
+        public async Task Stop()
+        {
+            await StopService();
+            await UninstallService();
+        }
+
+        private async Task InstallService()
+        {
             await Task.Run(() =>
             {
                 using (var process = GetProcess("install-service"))
@@ -38,7 +50,13 @@ namespace Neo4jManager
                     process.Start();
                     process.WaitForExit();
                 }
+            });
+        }
 
+        private async Task StartService()
+        {
+            await Task.Run(() =>
+            {
                 using (var process = GetProcess("start"))
                 {
                     process.Start();
@@ -49,7 +67,7 @@ namespace Neo4jManager
             await this.WaitForReady();
         }
 
-        public async Task Stop()
+        private async Task StopService()
         {
             await Task.Run(() =>
             {
@@ -58,7 +76,13 @@ namespace Neo4jManager
                     process.Start();
                     process.WaitForExit();
                 }
+            });
+        }
 
+        private async Task UninstallService()
+        {
+            await Task.Run(() =>
+            {
                 using (var process = GetProcess("uninstall-service"))
                 {
                     process.Start();
@@ -85,18 +109,18 @@ namespace Neo4jManager
         {
             var dataPath = GetDataPath();
 
-            if (stopInstanceBeforeBackup) await Stop();
+            if (stopInstanceBeforeBackup) await StopService();
             fileCopy.MirrorFolders(dataPath, destinationPath);
-            if (stopInstanceBeforeBackup) await Start();
+            if (stopInstanceBeforeBackup) await StartService();
         }
 
         public async Task Restore(string sourcePath)
         {
             var dataPath = GetDataPath();
 
-            await Stop();
+            await StopService();
             fileCopy.MirrorFolders(sourcePath, dataPath);
-            await Start();
+            await StartService();
         }
 
         public Neo4jEndpoints Endpoints { get; }
