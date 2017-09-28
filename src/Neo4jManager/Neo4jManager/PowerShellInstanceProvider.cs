@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class PowerShellInstanceProvider : Neo4jProcessBasedInstanceProvider, INeo4jInstance
+    public class PowerShellInstanceProvider : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
     {
         private const int defaultWaitForKill = 10000;
 
@@ -44,6 +44,8 @@ namespace Neo4jManager
                 Stop();
             }, token);
         }
+
+        public string Id { get; set; }
 
         private void Stop()
         {

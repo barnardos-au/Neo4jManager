@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class ServiceInstanceProvider : Neo4jProcessBasedInstanceProvider, INeo4jInstance
+    public class ServiceInstanceProvider : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
     {
         public ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
             : base(neo4jHomeFolder, fileCopy, endpoints)
@@ -32,6 +32,8 @@ namespace Neo4jManager
             await StopService(token);
             await StartService(token);
         }
+
+        public string Id { get; set; }
 
         public void Dispose()
         {

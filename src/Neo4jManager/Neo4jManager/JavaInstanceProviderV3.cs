@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class JavaInstanceProviderV3 : Neo4jProcessBasedInstanceProvider, INeo4jInstance
+    public class JavaInstanceProviderV3 : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
     {
         private const int defaultWaitForKill = 10000;
 
@@ -49,6 +49,8 @@ namespace Neo4jManager
                 Stop();
             }, token);
         }
+
+        public string Id { get; set; }
 
         private void Stop()
         {

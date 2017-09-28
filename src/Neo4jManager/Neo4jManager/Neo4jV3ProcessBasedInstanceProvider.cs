@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public abstract class Neo4jProcessBasedInstanceProvider
+    public abstract class Neo4jV3ProcessBasedInstanceProvider
     {
         protected const string quotes = "\"";
 
@@ -18,7 +18,7 @@ namespace Neo4jManager
         private readonly IFileCopy fileCopy;
         protected readonly ConfigEditor configEditor;
 
-        protected Neo4jProcessBasedInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
+        protected Neo4jV3ProcessBasedInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
         {
             this.neo4jHomeFolder = neo4jHomeFolder;
             this.fileCopy = fileCopy;
@@ -68,7 +68,7 @@ namespace Neo4jManager
             await StopWhile(token, () => fileCopy.MirrorFolders(sourcePath, dataPath));
         }
 
-        public virtual void Configure(string key, string value)
+        public virtual void Configure(string configFile, string key, string value)
         {
             configEditor.SetValue(key, value);
         }

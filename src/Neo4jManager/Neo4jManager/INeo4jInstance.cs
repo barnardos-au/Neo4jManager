@@ -14,9 +14,11 @@ namespace Neo4jManager
         Task Clear(CancellationToken token);
         Task Backup(CancellationToken token, string destinationPath, bool stopInstanceBeforeBackup = true);
         Task Restore(CancellationToken token, string sourcePath);
-        void Configure(string key, string value);
+        void Configure(string configFile, string key, string value);
 
         Neo4jEndpoints Endpoints { get; }
         string DataPath { get; }
+
+        string Id { get; set; }
     }
 }
