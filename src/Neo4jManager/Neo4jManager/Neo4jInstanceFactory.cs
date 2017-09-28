@@ -46,31 +46,32 @@ namespace Neo4jManager
                 case Neo4jArchitecture.V3:
                     instance = new Neo4jV3JavaInstanceProvider(javaPath, neo4jFolder, fileCopy, endpoints);
 
-                    instance.Configure("", "dbms.security.auth_enabled", "false");
-                    instance.Configure("", "dbms.allow_format_migration", "true");
-                    instance.Configure("", "dbms.jvm.additional.1", "-Dfile.encoding=UTF-8");
-                    instance.Configure("", "dbms.directories.import", "");
+                    const string configFile = Neo4jV3ProcessBasedInstanceProvider.Neo4jConfigFile;
+                    instance.Configure(configFile, "dbms.security.auth_enabled", "false");
+                    instance.Configure(configFile, "dbms.allow_format_migration", "true");
+                    instance.Configure(configFile, "dbms.jvm.additional.1", "-Dfile.encoding=UTF-8");
+                    instance.Configure(configFile, "dbms.directories.import", "");
 
-                    instance.Configure("", "dbms.connector.http.listen_address", $":{endpoints.HttpEndpoint.Port}");
+                    instance.Configure(configFile, "dbms.connector.http.listen_address", $":{endpoints.HttpEndpoint.Port}");
 
                     if (endpoints.BoltEndpoint != null)
                     {
-                        instance.Configure("", "dbms.connector.bolt.listen_address", $":{endpoints.BoltEndpoint.Port}");
-                        instance.Configure("", "dbms.connector.bolt.enabled", "true");
+                        instance.Configure(configFile, "dbms.connector.bolt.listen_address", $":{endpoints.BoltEndpoint.Port}");
+                        instance.Configure(configFile, "dbms.connector.bolt.enabled", "true");
                     }
                     else
                     {
-                        instance.Configure("", "dbms.connector.bolt.enabled", "false");
+                        instance.Configure(configFile, "dbms.connector.bolt.enabled", "false");
                     }
 
                     if (endpoints.HttpsEndpoint != null)
                     {
-                        instance.Configure("", "dbms.connector.https.listen_address", $":{endpoints.HttpsEndpoint.Port}");
-                        instance.Configure("", "dbms.connector.https.enabled", "true");
+                        instance.Configure(configFile, "dbms.connector.https.listen_address", $":{endpoints.HttpsEndpoint.Port}");
+                        instance.Configure(configFile, "dbms.connector.https.enabled", "true");
                     }
                     else
                     {
-                        instance.Configure("", "dbms.connector.https.enabled", "false");
+                        instance.Configure(configFile, "dbms.connector.https.enabled", "false");
                     }
 
                     break;

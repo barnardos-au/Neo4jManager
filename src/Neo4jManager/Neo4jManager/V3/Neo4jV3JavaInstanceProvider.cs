@@ -91,7 +91,7 @@ namespace Neo4jManager.V3
             builder.Append(" -Dneo4j.ext.udc.source=zip-powershell");
             builder.Append(" -Dorg.neo4j.cluster.logdirectory=data/log");
 
-            var jvmAdditionalParams = configEditor
+            var jvmAdditionalParams = configEditors[Neo4jConfigFile]
                 .FindValues("dbms.jvm.additional")
                 .Select(p => p.Value);
 
@@ -100,12 +100,12 @@ namespace Neo4jManager.V3
                 builder.Append($" {param}");
             }
 
-            var heapInitialSize = configEditor.GetValue("dbms.memory.heap.initial_size");
+            var heapInitialSize = configEditors[Neo4jConfigFile].GetValue("dbms.memory.heap.initial_size");
             if (!string.IsNullOrEmpty(heapInitialSize))
             {
                 builder.Append($" -Xms{heapInitialSize}");
             }
-            var heapMaxSize = configEditor.GetValue("dbms.memory.heap.max_size");
+            var heapMaxSize = configEditors[Neo4jConfigFile].GetValue("dbms.memory.heap.max_size");
             if (!string.IsNullOrEmpty(heapMaxSize))
             {
                 builder.Append($" -Xmx{heapMaxSize}");
