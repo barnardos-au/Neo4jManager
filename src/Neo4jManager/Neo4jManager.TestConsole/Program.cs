@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,28 +19,37 @@ namespace Neo4jManager
 
             var config = new Neo4jManagerConfig
             {
-                Neo4jBasePath = @"c:\Neo4jManager\neo4j",
+                Neo4jBasePath = @"c:\Neo4jManager",
                 StartBoltPort = 7687,
                 StartHttpPort = 7401
             };
 
-            using (var pool = new Neo4jInstancePool(new FileCopy(), config))
-            {
-                var instance1 = pool.Create(neo4Jversion, "1");
-                var instance2 = pool.Create(neo4Jversion, "2");
+            var instanceFactory = new Neo4jInstanceFactory(config, new FileCopy());
 
-                var task1 = Process(instance1, ct);
-                var task2 = Process(instance2, ct);
-                Task.WhenAll(task1, task2).Wait(ct);
+            using (var pool = new Neo4jInstancePool(config, instanceFactory))
+            {
+                pool.Create(neo4Jversion, "1");
+                pool.Create(neo4Jversion, "2");
+                pool.Create(neo4Jversion, "3");
+                pool.Create(neo4Jversion, "4");
+
+                var task1 = Process(pool.Instances.Single(p => p.Key == "1"), ct);
+                var task2 = Process(pool.Instances.Single(p => p.Key == "2"), ct);
+                var task3 = Process(pool.Instances.Single(p => p.Key == "3"), ct);
+                var task4 = Process(pool.Instances.Single(p => p.Key == "4"), ct);
+
+                Task.WhenAll(task1, task2, task3, task4).Wait(ct);
             }
         }
 
-        private static async Task Process(INeo4jInstance instance, CancellationToken token)
+        private static async Task Process(KeyValuePair<string, INeo4jInstance> kvp, CancellationToken token)
         {
-            var port = instance.Endpoints.HttpEndpoint.Port;
+            var instance = kvp.Value;
+
             await instance.Start(token);
-            await instance.Backup(token, $@"C:\temp\backup\{port}");
-            await instance.Restore(token, $@"C:\temp\backup\{port}");
+            await instance.Backup(token, $@"C:\temp\backup\{kvp.Key}");
+            await instance.Restore(token, $@"C:\temp\backup\{kvp.Key}");
+            await instance.Clear(token);
         }
     }
 }

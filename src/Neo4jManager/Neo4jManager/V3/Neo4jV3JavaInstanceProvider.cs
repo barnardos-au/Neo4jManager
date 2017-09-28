@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Neo4jManager
+namespace Neo4jManager.V3
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class JavaInstanceProviderV3 : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
+    public class Neo4jV3JavaInstanceProvider : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
     {
         private const int defaultWaitForKill = 10000;
 
@@ -17,7 +17,7 @@ namespace Neo4jManager
         private Process process;
 
 
-        public JavaInstanceProviderV3(string javaPath, string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
+        public Neo4jV3JavaInstanceProvider(string javaPath, string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
             :base(neo4jHomeFolder, fileCopy, endpoints)
         {
             this.javaPath = javaPath;
@@ -49,8 +49,6 @@ namespace Neo4jManager
                 Stop();
             }, token);
         }
-
-        public string Id { get; set; }
 
         private void Stop()
         {

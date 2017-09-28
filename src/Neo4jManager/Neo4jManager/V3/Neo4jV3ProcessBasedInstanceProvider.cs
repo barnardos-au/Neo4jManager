@@ -4,10 +4,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Neo4jManager
+namespace Neo4jManager.V3
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public abstract class Neo4jV2ProcessBasedInstanceProvider
+    public abstract class Neo4jV3ProcessBasedInstanceProvider
     {
         protected const string quotes = "\"";
 
@@ -15,18 +15,16 @@ namespace Neo4jManager
         protected const string defaultActiveDatabase = "graph.db";
 
         protected readonly string neo4jHomeFolder;
-        protected readonly string neo4jConfigFolder;
         private readonly IFileCopy fileCopy;
         protected readonly ConfigEditor configEditor;
 
-        protected Neo4jV2ProcessBasedInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
+        protected Neo4jV3ProcessBasedInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
         {
             this.neo4jHomeFolder = neo4jHomeFolder;
-            this.neo4jConfigFolder = Path.Combine(neo4jHomeFolder, "conf");
             this.fileCopy = fileCopy;
             Endpoints = endpoints;
 
-            var configFile = Path.Combine(neo4jConfigFolder, "neo4j.conf");
+            var configFile = Path.Combine(neo4jHomeFolder, "conf/neo4j.conf");
             configEditor = new ConfigEditor(configFile);
         }
 

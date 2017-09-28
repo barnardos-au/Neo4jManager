@@ -1,31 +1,57 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Neo4jManager
+namespace Neo4jManager.V2
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public abstract class Neo4jV3ProcessBasedInstanceProvider
+    public abstract class Neo4jV2ProcessBasedInstanceProvider
     {
+        public const string LoggingPropertiesConfigFile = "logging.properties";
+        public const string Neo4jPropertiesConfigFile = "neo4j.properties";
+        public const string Neo4jServierPropertiesConfigFile = "neo4j-server.properties";
+        public const string Neo4jWrapperConfigFile = "neo4j-wrapper.conf";
+
         protected const string quotes = "\"";
 
-        protected const string defaultDataDirectory = "data/databases";
-        protected const string defaultActiveDatabase = "graph.db";
+        protected const string defaultActiveDatabase = "data/graph.db";
+
+        private readonly IFileCopy fileCopy;
 
         protected readonly string neo4jHomeFolder;
-        private readonly IFileCopy fileCopy;
-        protected readonly ConfigEditor configEditor;
+        protected readonly string neo4jConfigFolder;
+        protected readonly Dictionary<string, ConfigEditor> configEditors;
 
-        protected Neo4jV3ProcessBasedInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
+        protected Neo4jV2ProcessBasedInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
         {
             this.neo4jHomeFolder = neo4jHomeFolder;
             this.fileCopy = fileCopy;
+
+            neo4jConfigFolder = Path.Combine(neo4jHomeFolder, "conf");
             Endpoints = endpoints;
 
-            var configFile = Path.Combine(neo4jHomeFolder, "conf/neo4j.conf");
-            configEditor = new ConfigEditor(configFile);
+            configEditors = new Dictionary<string, ConfigEditor>
+            {
+                {
+                    LoggingPropertiesConfigFile,
+                    new ConfigEditor(Path.Combine(neo4jConfigFolder, LoggingPropertiesConfigFile))
+                },
+                {
+                    Neo4jPropertiesConfigFile,
+                    new ConfigEditor(Path.Combine(neo4jConfigFolder, Neo4jPropertiesConfigFile))
+                },
+                {
+                    Neo4jServierPropertiesConfigFile,
+                    new ConfigEditor(Path.Combine(neo4jConfigFolder, Neo4jServierPropertiesConfigFile))
+                },
+                {
+                    Neo4jWrapperConfigFile,
+                    new ConfigEditor(Path.Combine(neo4jConfigFolder, Neo4jWrapperConfigFile))
+                }
+            };
         }
 
         public abstract Task Stop(CancellationToken token);
@@ -70,7 +96,7 @@ namespace Neo4jManager
 
         public virtual void Configure(string configFile, string key, string value)
         {
-            configEditor.SetValue(key, value);
+            configEditors[configFile].SetValue(key, value);
         }
 
         public virtual Neo4jEndpoints Endpoints { get; }
@@ -86,15 +112,11 @@ namespace Neo4jManager
 
         protected virtual string GetDataPath()
         {
-            var dataDirectory = configEditor.GetValue("dbms.directories.data");
-            if (string.IsNullOrEmpty(dataDirectory))
-                dataDirectory = defaultDataDirectory;
-
-            var activeDatabase = configEditor.GetValue("dbms.active_database");
+            var activeDatabase = configEditors[Neo4jServierPropertiesConfigFile].GetValue("org.neo4j.server.database.location");
             if (string.IsNullOrEmpty(activeDatabase))
                 activeDatabase = defaultActiveDatabase;
 
-            return Path.Combine(neo4jHomeFolder, dataDirectory, activeDatabase);
+            return Path.Combine(neo4jHomeFolder, activeDatabase);
         }
     }
 }

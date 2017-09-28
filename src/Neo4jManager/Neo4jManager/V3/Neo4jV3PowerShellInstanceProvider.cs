@@ -4,16 +4,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Neo4jManager
+namespace Neo4jManager.V3
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class PowerShellInstanceProvider : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
+    public class Neo4jV3PowerShellInstanceProvider : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
     {
         private const int defaultWaitForKill = 10000;
 
         private Process process;
 
-        public PowerShellInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
+        public Neo4jV3PowerShellInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
             : base(neo4jHomeFolder, fileCopy, endpoints)
         {
         }
@@ -44,8 +44,6 @@ namespace Neo4jManager
                 Stop();
             }, token);
         }
-
-        public string Id { get; set; }
 
         private void Stop()
         {

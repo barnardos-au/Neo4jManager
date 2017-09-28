@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Neo4jManager
+namespace Neo4jManager.V3
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class ServiceInstanceProvider : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
+    public class Neo4jV3ServiceInstanceProvider : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
     {
-        public ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
+        public Neo4jV3ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
             : base(neo4jHomeFolder, fileCopy, endpoints)
         {
         }
@@ -32,8 +32,6 @@ namespace Neo4jManager
             await StopService(token);
             await StartService(token);
         }
-
-        public string Id { get; set; }
 
         public void Dispose()
         {
