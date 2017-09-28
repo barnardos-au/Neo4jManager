@@ -14,7 +14,10 @@ namespace Neo4jManager
             var tokenSource = new CancellationTokenSource();
             var ct = tokenSource.Token;
 
-            var neo4Jversion = Neo4jVersions.GetVersions()
+            var neo4jV2 = Neo4jVersions.GetVersions()
+                .Single(p => p.Version == "2.3.2");
+
+            var neo4jV3 = Neo4jVersions.GetVersions()
                 .Single(p => p.Version == "3.2.3");
 
             var config = new Neo4jManagerConfig
@@ -28,10 +31,10 @@ namespace Neo4jManager
 
             using (var pool = new Neo4jInstancePool(config, instanceFactory))
             {
-                pool.Create(neo4Jversion, "1");
-                pool.Create(neo4Jversion, "2");
-                pool.Create(neo4Jversion, "3");
-                pool.Create(neo4Jversion, "4");
+                pool.Create(neo4jV2, "1");
+                pool.Create(neo4jV3, "2");
+                pool.Create(neo4jV3, "3");
+                pool.Create(neo4jV3, "4");
 
                 var task1 = Process(pool.Instances.Single(p => p.Key == "1"), ct);
                 var task2 = Process(pool.Instances.Single(p => p.Key == "2"), ct);

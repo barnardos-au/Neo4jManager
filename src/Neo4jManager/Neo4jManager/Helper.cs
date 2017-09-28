@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -22,6 +23,8 @@ namespace Neo4jManager
 
             if (File.Exists(zipFile)) return;
 
+            Console.WriteLine($"Downloading Neo4j from {neo4jVersion.DownloadUrl}");
+
             var fileInfo = new FileInfo(zipFile);
             Directory.CreateDirectory(fileInfo.DirectoryName);
 
@@ -37,6 +40,8 @@ namespace Neo4jManager
             var extractFolder = Path.Combine(neo4jBasePath, Path.GetFileNameWithoutExtension(neo4jVersion.ZipFileName));
 
             if (Directory.Exists(extractFolder)) return;
+
+            Console.WriteLine($"Extracting Neo4j from {neo4jVersion.ZipFileName} to {extractFolder}");
 
             ZipFile.ExtractToDirectory(zipFile, extractFolder);
         }

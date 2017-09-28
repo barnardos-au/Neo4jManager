@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,45 +79,39 @@ namespace Neo4jManager.V2
             var builder = new StringBuilder();
 
             builder
-                .Append(" -cp ")
-                .Append(quotes)
-                .Append($"{neo4jHomeFolder}/lib/*;{neo4jHomeFolder}/plugins/*")
-                .Append(quotes);
-
-            builder.Append(" -server");
-
-            builder.Append(" -Dneo4j.ext.udc.source=zip-powershell");
-            builder.Append(" -Dorg.neo4j.cluster.logdirectory=data/log");
-
-            var jvmAdditionalParams = configEditors[Neo4jWrapperConfigFile]
-                .FindValues("wrapper.java.additional")
-                .Select(p => p.Value);
-
-            foreach (var param in jvmAdditionalParams)
-            {
-                builder.Append($" {param}");
-            }
-
-            var heapInitialSize = configEditors[Neo4jWrapperConfigFile].GetValue("wrapper.java.initmemory");
-            if (!string.IsNullOrEmpty(heapInitialSize))
-            {
-                builder.Append($" -Xms{heapInitialSize}");
-            }
-            var heapMaxSize = configEditors[Neo4jWrapperConfigFile].GetValue("wrapper.java.maxmemory");
-            if (!string.IsNullOrEmpty(heapMaxSize))
-            {
-                builder.Append($" -Xmx{heapMaxSize}");
-            }
-
-            builder
-                .Append(" org.neo4j.server.CommunityEntryPoint")
-                .Append(" --config-dir=")
-                .Append(quotes)
-                .Append($@"{neo4jHomeFolder}\conf")
-                .Append(quotes)
-                .Append(" --home-dir=")
+                .Append(" -DworkingDir=")
                 .Append(quotes)
                 .Append(neo4jHomeFolder)
+                .Append(quotes);
+
+            builder
+                .Append(" Djava.util.logging.config.file=")
+                .Append(quotes)
+                .Append($@"{neo4jHomeFolder}\conf\windows-wrapper-logging.properties")
+                .Append(quotes);
+
+            builder
+                .Append(" -DconfigFile=")
+                .Append(quotes)
+                .Append("conf/neo4j-wrapper.conf")
+                .Append(quotes);
+
+            builder
+                .Append(" -DserverClasspath=")
+                .Append(quotes)
+                .Append(@"lib/*.jar;system/lib/*.jar;plugins/**/*.jar;./conf*")
+                .Append(quotes);
+
+            builder
+                .Append(" -DserverMainClass=")
+                .Append(quotes)
+                .Append("org.neo4j.server.CommunityBootstrapper")
+                .Append(quotes);
+
+            builder
+                .Append(" -jar ")
+                .Append(quotes)
+                .Append($@"{neo4jHomeFolder}\bin\windows-service-wrapper-5.jar")
                 .Append(quotes);
 
             return builder.ToString();
