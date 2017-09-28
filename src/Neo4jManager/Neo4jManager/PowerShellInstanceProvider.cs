@@ -1,29 +1,30 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class PowerShellInstanceProvider : Neo4jProcessBasedInstanceProvider, INeo4jInstanceProvider
+    public class PowerShellInstanceProvider : Neo4jProcessBasedInstanceProvider, INeo4jInstance
     {
         private const int defaultWaitForKill = 10000;
 
         private Process process;
-     
+
         public PowerShellInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
-            :base(neo4jHomeFolder, fileCopy, endpoints)
+            : base(neo4jHomeFolder, fileCopy, endpoints)
         {
         }
 
-        public override async Task Start()
+        public override async Task Start(CancellationToken token)
         {
             if (process == null)
             {
                 process = GetProcess();
                 process.Start();
-                await this.WaitForReady();
+                await this.WaitForReady(token);
 
                 return;
             }
@@ -31,23 +32,28 @@ namespace Neo4jManager
             if (!process.HasExited) return;
 
             process.Start();
-            await this.WaitForReady();
+            await this.WaitForReady(token);
         }
 
-        public override async Task Stop()
+        public override async Task Stop(CancellationToken token)
         {
             if (process == null || process.HasExited) return;
 
             await Task.Run(() =>
             {
-                process.Kill();
-                process.WaitForExit(defaultWaitForKill);
-            });
+                Stop();
+            }, token);
+        }
+
+        private void Stop()
+        {
+            process.Kill();
+            process.WaitForExit(defaultWaitForKill);
         }
 
         public void Dispose()
         {
-            Stop().Wait();
+            Stop();
 
             process?.Dispose();
         }

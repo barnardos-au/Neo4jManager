@@ -12,7 +12,7 @@ namespace Neo4jManager
                 Arguments = $" {source} {destination} /mir /w:15 /r:5 /np"
             };
 
-            using (var process = new Process {StartInfo = processStartInfo})
+            using (var process = new Process { StartInfo = processStartInfo })
             {
                 process.Start();
                 process.WaitForExit();

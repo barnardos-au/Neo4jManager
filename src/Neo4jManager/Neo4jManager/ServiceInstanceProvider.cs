@@ -2,42 +2,44 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class ServiceInstanceProvider : Neo4jProcessBasedInstanceProvider, INeo4jInstanceProvider
+    public class ServiceInstanceProvider : Neo4jProcessBasedInstanceProvider, INeo4jInstance
     {
         public ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
-            :base(neo4jHomeFolder, fileCopy, endpoints)
+            : base(neo4jHomeFolder, fileCopy, endpoints)
         {
         }
 
-        public override async Task Start()
+        public override async Task Start(CancellationToken token)
         {
-            await InstallService();
-            await StartService();
+            await InstallService(token);
+            await StartService(token);
         }
 
-        public override async Task Stop()
+        public override async Task Stop(CancellationToken token)
         {
-            await StopService();
-            await UninstallService();
+            await StopService(token);
+            await UninstallService(token);
         }
 
-        public override async Task Restart()
+        public override async Task Restart(CancellationToken token)
         {
-            await StopService();
-            await StartService();
+            await StopService(token);
+            await StartService(token);
         }
 
         public void Dispose()
         {
-            Stop().Wait();
+            StopServiceProcess();
+            UninstallServiceProcess();
         }
 
-        private async Task InstallService()
+        private async Task InstallService(CancellationToken token)
         {
             await Task.Run(() =>
             {
@@ -46,10 +48,10 @@ namespace Neo4jManager
                     process.Start();
                     process.WaitForExit();
                 }
-            });
+            }, token);
         }
 
-        private async Task StartService()
+        private async Task StartService(CancellationToken token)
         {
             await Task.Run(() =>
             {
@@ -58,40 +60,50 @@ namespace Neo4jManager
                     process.Start();
                     process.WaitForExit();
                 }
-            });
+            }, token);
 
-            await this.WaitForReady();
+            await this.WaitForReady(token);
         }
 
-        private async Task StopService()
+        private async Task StopService(CancellationToken token)
         {
             await Task.Run(() =>
             {
-                using (var process = GetProcess("stop"))
-                {
-                    process.Start();
-                    process.WaitForExit();
-                }
-            });
+                StopServiceProcess();
+            }, token);
         }
 
-        private async Task UninstallService()
+        private void StopServiceProcess()
+        {
+            using (var process = GetProcess("stop"))
+            {
+                process.Start();
+                process.WaitForExit();
+            }
+        }
+
+        private async Task UninstallService(CancellationToken token)
         {
             await Task.Run(() =>
             {
-                using (var process = GetProcess("uninstall-service"))
-                {
-                    process.Start();
-                    process.WaitForExit();
-                }
-            });
+                UninstallServiceProcess();
+            }, token);
         }
 
-        protected override async Task StopWhile(Action action)
+        private void UninstallServiceProcess()
         {
-            await StopService();
-            await Task.Run(action);
-            await StartService();
+            using (var process = GetProcess("uninstall-service"))
+            {
+                process.Start();
+                process.WaitForExit();
+            }
+        }
+
+        protected override async Task StopWhile(CancellationToken token, Action action)
+        {
+            await StopService(token);
+            await Task.Run(action, token);
+            await StartService(token);
         }
 
         private Process GetProcess(string command)
@@ -112,7 +124,7 @@ namespace Neo4jManager
 
             builder
                 .Append(" -NoProfile")
-                .Append(" -NonInteractive")
+                //.Append(" -NonInteractive")
                 .Append(" -NoLogo")
                 .Append(" -ExecutionPolicy Bypass")
                 .Append(" -Command ")

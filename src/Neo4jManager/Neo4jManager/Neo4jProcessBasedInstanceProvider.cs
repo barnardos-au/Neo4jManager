@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Neo4jManager
@@ -27,24 +28,24 @@ namespace Neo4jManager
             configEditor = new ConfigEditor(configFile);
         }
 
-        public abstract Task Stop();
+        public abstract Task Stop(CancellationToken token);
 
-        public abstract Task Start();
+        public abstract Task Start(CancellationToken token);
 
-        public virtual async Task Restart()
+        public virtual async Task Restart(CancellationToken token)
         {
-            await Stop();
-            await Start();
+            await Stop(token);
+            await Start(token);
         }
 
-        public virtual async Task Clear()
+        public virtual async Task Clear(CancellationToken token)
         {
             var dataPath = GetDataPath();
 
-            await StopWhile(() => Directory.Delete(dataPath));
+            await StopWhile(token, () => Directory.Delete(dataPath, true));
         }
 
-        public virtual async Task Backup(string destinationPath, bool stopInstanceBeforeBackup = true)
+        public virtual async Task Backup(CancellationToken token, string destinationPath, bool stopInstanceBeforeBackup = true)
         {
             var dataPath = GetDataPath();
 
@@ -52,19 +53,19 @@ namespace Neo4jManager
 
             if (stopInstanceBeforeBackup)
             {
-                await StopWhile(action);
+                await StopWhile(token, action);
             }
             else
             {
-                await Task.Run(action);
+                await Task.Run(action, token);
             }
         }
 
-        public virtual async Task Restore(string sourcePath)
+        public virtual async Task Restore(CancellationToken token, string sourcePath)
         {
             var dataPath = GetDataPath();
 
-            await StopWhile(() => fileCopy.MirrorFolders(sourcePath, dataPath));
+            await StopWhile(token, () => fileCopy.MirrorFolders(sourcePath, dataPath));
         }
 
         public virtual void Configure(string key, string value)
@@ -74,11 +75,13 @@ namespace Neo4jManager
 
         public virtual Neo4jEndpoints Endpoints { get; }
 
-        protected virtual async Task StopWhile(Action action)
+        public virtual string DataPath => GetDataPath();
+
+        protected virtual async Task StopWhile(CancellationToken token, Action action)
         {
-            await Stop();
-            await Task.Run(action);
-            await Start();
+            await Stop(token);
+            await Task.Run(action, token);
+            await Start(token);
         }
 
         protected virtual string GetDataPath()

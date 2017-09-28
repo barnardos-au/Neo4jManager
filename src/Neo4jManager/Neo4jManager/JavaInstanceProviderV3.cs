@@ -2,12 +2,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class JavaInstanceProviderV3 : Neo4jProcessBasedInstanceProvider, INeo4jInstanceProvider
+    public class JavaInstanceProviderV3 : Neo4jProcessBasedInstanceProvider, INeo4jInstance
     {
         private const int defaultWaitForKill = 10000;
 
@@ -22,13 +23,13 @@ namespace Neo4jManager
             this.javaPath = javaPath;
         }
 
-        public override async Task Start()
+        public override async Task Start(CancellationToken token)
         {
             if (process == null)
             {
                 process = GetProcess();
                 process.Start();
-                await this.WaitForReady();
+                await this.WaitForReady(token);
 
                 return;
             }
@@ -36,23 +37,28 @@ namespace Neo4jManager
             if (!process.HasExited) return;
             
             process.Start();
-            await this.WaitForReady();
+            await this.WaitForReady(token);
         }
 
-        public override async Task Stop()
+        public override async Task Stop(CancellationToken token)
         {
             if (process == null || process.HasExited) return;
 
             await Task.Run(() =>
             {
-                process.Kill();
-                process.WaitForExit(defaultWaitForKill);
-            });
+                Stop();
+            }, token);
+        }
+
+        private void Stop()
+        {
+            process.Kill();
+            process.WaitForExit(defaultWaitForKill);
         }
 
         public void Dispose()
         {
-            Stop().Wait();
+            Stop();
 
             process?.Dispose();
         }

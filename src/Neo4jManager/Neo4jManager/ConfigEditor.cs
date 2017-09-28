@@ -48,10 +48,10 @@ namespace Neo4jManager
             var content = File.ReadAllLines(configFile);
 
             return (from line in content
-                    select line.Split(new[] { '=' }, 2, StringSplitOptions.None)
-                    into property
-                    where property[0] == key
-                    select property[1]).FirstOrDefault();
+                select line.Split(new[] { '=' }, 2, StringSplitOptions.None)
+                into property
+                where property[0] == key
+                select property[1]).FirstOrDefault();
         }
 
         public IEnumerable<KeyValuePair<string, string>> FindValues(string searchKey)
