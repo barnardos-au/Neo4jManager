@@ -85,7 +85,7 @@ namespace Neo4jManager.V2
                 .Append(quotes);
 
             builder
-                .Append(" Djava.util.logging.config.file=")
+                .Append(" -Djava.util.logging.config.file=")
                 .Append(quotes)
                 .Append($@"{neo4jHomeFolder}\conf\windows-wrapper-logging.properties")
                 .Append(quotes);

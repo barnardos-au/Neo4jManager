@@ -40,7 +40,25 @@ namespace Neo4jManager
             switch (neo4jVersion.Architecture)
             {
                 case Neo4jArchitecture.V2:
-                    instance = new Neo4jV2JavaInstanceProvider(javaPath, neo4jFolder, fileCopy, endpoints);
+                    instance = new Neo4jV2ServiceInstanceProvider(neo4jFolder, fileCopy, endpoints);
+
+                    instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jServierPropertiesConfigFile, "dbms.security.auth_enabled", "false");
+                    instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jPropertiesConfigFile, "allow_store_upgrade", "true");
+                    instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jWrapperConfigFile, "wrapper.java.additional.1", "-Dfile.encoding=UTF-8");
+                    instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jWrapperConfigFile, "wrapper.name", $"Neo4j{endpoints.HttpEndpoint.Port}");
+
+                    instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jServierPropertiesConfigFile, "org.neo4j.server.webserver.port", $"{endpoints.HttpEndpoint.Port}");
+
+                    if (endpoints.HttpsEndpoint != null)
+                    {
+                        instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jServierPropertiesConfigFile, "org.neo4j.server.webserver.https.port", $"{endpoints.HttpsEndpoint.Port}");
+                        instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jServierPropertiesConfigFile, "org.neo4j.server.webserver.https.enabled", "true");
+                    }
+                    else
+                    {
+                        instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jServierPropertiesConfigFile, "org.neo4j.server.webserver.https.enabled", "false");
+                    }
+
                     break;
 
                 case Neo4jArchitecture.V3:

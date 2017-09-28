@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class Neo4jInstancePool : IDisposable
+    public class Neo4jInstancePool : INeo4jInstancePool
     {
         private readonly INeo4jManagerConfig neo4JManagerConfig;
         private readonly INeo4jInstanceFactory neo4jInstanceFactory;
@@ -36,14 +35,21 @@ namespace Neo4jManager
             return instance;
         }
 
-        public Dictionary<string, INeo4jInstance> Instances { get; }
-
-        public void Dispose()
+        public void Reset()
         {
             foreach (var instance in Instances.Values)
             {
                 instance.Dispose();
             }
+
+            Instances.Clear();
+        }
+
+        public Dictionary<string, INeo4jInstance> Instances { get; }
+
+        public void Dispose()
+        {
+            Reset();
         }
     }
 }

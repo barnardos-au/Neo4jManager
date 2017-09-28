@@ -68,7 +68,10 @@ namespace Neo4jManager.V2
         {
             var dataPath = GetDataPath();
 
-            await StopWhile(token, () => Directory.Delete(dataPath, true));
+            await StopWhile(token, () =>
+            {
+                Directory.Delete(dataPath, true);
+            });
         }
 
         public virtual async Task Backup(CancellationToken token, string destinationPath, bool stopInstanceBeforeBackup = true)
