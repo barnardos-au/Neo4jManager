@@ -31,18 +31,36 @@ namespace Neo4jManager
 
             using (var pool = new Neo4jInstancePool(config, instanceFactory))
             {
-                pool.Create(neo4jV2, "1");
-                pool.Create(neo4jV2, "2");
-                pool.Create(neo4jV2, "3");
-                pool.Create(neo4jV2, "4");
+                for (var i = 0; i < 10; i++)
+                {
+                    pool.Clear();
 
-                var task1 = Process(pool.Instances.Single(p => p.Key == "1"), ct);
-                var task2 = Process(pool.Instances.Single(p => p.Key == "2"), ct);
-                var task3 = Process(pool.Instances.Single(p => p.Key == "3"), ct);
-                var task4 = Process(pool.Instances.Single(p => p.Key == "4"), ct);
+                    pool.Create(neo4jV3, "1");
+                    pool.Create(neo4jV3, "2");
+                    pool.Create(neo4jV3, "3");
+                    pool.Create(neo4jV3, "4");
 
-                Task.WhenAll(task1, task2, task3, task4).Wait(ct);
-                //Task.WhenAll(task1).Wait(ct);
+                    var task1 = Process(pool.Instances.Single(p => p.Key == "1"), ct);
+                    var task2 = Process(pool.Instances.Single(p => p.Key == "2"), ct);
+                    var task3 = Process(pool.Instances.Single(p => p.Key == "3"), ct);
+                    var task4 = Process(pool.Instances.Single(p => p.Key == "4"), ct);
+
+                    Task.WhenAll(task1, task2, task3, task4).Wait(ct);
+
+                    pool.Clear();
+
+                    pool.Create(neo4jV2, "5");
+                    pool.Create(neo4jV2, "6");
+                    pool.Create(neo4jV2, "7");
+                    pool.Create(neo4jV2, "8");
+
+                    var task5 = Process(pool.Instances.Single(p => p.Key == "5"), ct);
+                    var task6 = Process(pool.Instances.Single(p => p.Key == "6"), ct);
+                    var task7 = Process(pool.Instances.Single(p => p.Key == "7"), ct);
+                    var task8 = Process(pool.Instances.Single(p => p.Key == "8"), ct);
+
+                    Task.WhenAll(task5, task6, task7, task8).Wait(ct);
+                }
             }
         }
 

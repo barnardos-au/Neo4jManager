@@ -8,7 +8,7 @@ namespace Neo4jManager
     public interface INeo4jInstancePool : IDisposable
     {
         INeo4jInstance Create(Neo4jVersion neo4jVersion, string id);
-        void Reset();
+        void Clear();
         Dictionary<string, INeo4jInstance> Instances { get; }
     }
 }

@@ -35,7 +35,7 @@ namespace Neo4jManager
             return instance;
         }
 
-        public void Reset()
+        public void Clear()
         {
             foreach (var instance in Instances.Values)
             {
@@ -49,7 +49,7 @@ namespace Neo4jManager
 
         public void Dispose()
         {
-            Reset();
+            Clear();
         }
     }
 }
