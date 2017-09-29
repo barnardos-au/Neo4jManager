@@ -32,17 +32,17 @@ namespace Neo4jManager
             using (var pool = new Neo4jInstancePool(config, instanceFactory))
             {
                 pool.Create(neo4jV2, "1");
-                //pool.Create(neo4jV3, "2");
-                //pool.Create(neo4jV3, "3");
-                //pool.Create(neo4jV3, "4");
+                pool.Create(neo4jV2, "2");
+                pool.Create(neo4jV2, "3");
+                pool.Create(neo4jV2, "4");
 
                 var task1 = Process(pool.Instances.Single(p => p.Key == "1"), ct);
-                //var task2 = Process(pool.Instances.Single(p => p.Key == "2"), ct);
-                //var task3 = Process(pool.Instances.Single(p => p.Key == "3"), ct);
-                //var task4 = Process(pool.Instances.Single(p => p.Key == "4"), ct);
+                var task2 = Process(pool.Instances.Single(p => p.Key == "2"), ct);
+                var task3 = Process(pool.Instances.Single(p => p.Key == "3"), ct);
+                var task4 = Process(pool.Instances.Single(p => p.Key == "4"), ct);
 
-                //Task.WhenAll(task1, task2, task3, task4).Wait(ct);
-                Task.WhenAll(task1).Wait(ct);
+                Task.WhenAll(task1, task2, task3, task4).Wait(ct);
+                //Task.WhenAll(task1).Wait(ct);
             }
         }
 
