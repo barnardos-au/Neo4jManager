@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager.TestConsole", "Neo4jManager.TestConsole\Neo4jManager.TestConsole.csproj", "{C2EB5161-EAA3-42D8-A121-A2036B1BE51E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neo4jManager", "Neo4jManager\Neo4jManager.csproj", "{9C7C4D77-8865-4D99-9972-C4732471D635}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager", "Neo4jManager\Neo4jManager.csproj", "{9C7C4D77-8865-4D99-9972-C4732471D635}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neo4jManager.Host", "Neo4jManager.Host\Neo4jManager.Host.csproj", "{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{9C7C4D77-8865-4D99-9972-C4732471D635}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C7C4D77-8865-4D99-9972-C4732471D635}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C7C4D77-8865-4D99-9972-C4732471D635}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
