@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager.TestConsole", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager", "Neo4jManager\Neo4jManager.csproj", "{9C7C4D77-8865-4D99-9972-C4732471D635}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neo4jManager.Host", "Neo4jManager.Host\Neo4jManager.Host.csproj", "{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neo4jManager.Host", "Neo4jManager.Host\Neo4jManager.Host.csproj", "{380D7C72-2284-4A23-96F3-1EAD03DADF1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{9C7C4D77-8865-4D99-9972-C4732471D635}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C7C4D77-8865-4D99-9972-C4732471D635}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C7C4D77-8865-4D99-9972-C4732471D635}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0C967C3F-11EA-41E6-8726-9CE34E6EAD87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{380D7C72-2284-4A23-96F3-1EAD03DADF1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{380D7C72-2284-4A23-96F3-1EAD03DADF1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{380D7C72-2284-4A23-96F3-1EAD03DADF1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{380D7C72-2284-4A23-96F3-1EAD03DADF1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
