@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ namespace Neo4jManager.Host
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IFileCopy, FileCopy>();
-            services.AddTransient<INeo4jManagerConfig>(config => new Neo4jManagerConfig
+            services.AddTransient<INeo4jManagerConfig>(provider => new Neo4jManagerConfig
             {
                 Neo4jBasePath = @"c:\Neo4jManager",
                 StartBoltPort = 7687,
@@ -24,6 +25,19 @@ namespace Neo4jManager.Host
             });
             services.AddTransient<INeo4jInstanceFactory, Neo4jInstanceFactory>();
             services.AddSingleton<INeo4jDeploymentsPool, Neo4jDeploymentsPool>();
+
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Neo4jVersion, Version>()
+                    .ForMember(dest => dest.VersionNumber, opts => opts.MapFrom(s => s.Version));
+                cfg.CreateMap<Neo4jEndpoints, Endpoints>();
+                cfg.CreateMap<KeyValuePair<string, INeo4jInstance>, Deployment>()
+                    .ForMember(dest => dest.Id, opts => opts.MapFrom(s => s.Key))
+                    .ForMember(dest => dest.DataPath, opts => opts.MapFrom(s => s.Value.DataPath))
+                    .ForMember(dest => dest.Version, opts => opts.MapFrom(s => s.Value.Version))
+                    .ForMember(dest => dest.Endpoints, opts => opts.MapFrom(s => s.Value.Endpoints));
+            });
+            services.AddTransient(provider => mapperConfig.CreateMapper());
 
             Services = services;
         }
@@ -38,13 +52,6 @@ namespace Neo4jManager.Host
             }
 
             app.UseOwin().UseNancy(o => o.Bootstrapper = new AutofacBootstrapper(Services));
-
-            Mapper.Initialize(cfg => {
-                cfg.CreateMap<Neo4jVersion, VersionInfo>();
-                cfg.CreateMap<Neo4jEndpoints, EndpointsInfo>();
-                cfg.CreateMap<INeo4jInstance, DeploymentInfo>();
-            });
-            
         }
     }
 }

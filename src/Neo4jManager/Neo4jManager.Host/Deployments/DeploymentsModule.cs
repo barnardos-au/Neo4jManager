@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Nancy;
 using Nancy.ModelBinding;
 
@@ -7,29 +9,34 @@ namespace Neo4jManager.Host.Deployments
 {
     public class DeploymentsModule : NancyModule
     {
-        public DeploymentsModule(INeo4jDeploymentsPool pool) : base("/deployments")
+        public DeploymentsModule(INeo4jDeploymentsPool pool, IMapper mapper) : base("/deployments")
         {
-            Get("/", _ => pool.Deployments.AsDeploymentInfos());
+            // Get all deployments
+            Get("/", _ => mapper.Map<IEnumerable<Deployment>>(pool.Deployments));
 
-            Get("/{Id}", parameters =>
+            // Get single deployment
+            Get("/{Id}", ctx =>
             {
-                string id = parameters.Id.ToString();
-                return pool.Deployments.Single(d => d.Key == id).AsDeploymentInfo();
+                string id = ctx.Id.ToString();
+                return mapper.Map<Deployment>(pool.Deployments.Single(d => d.Key == id));
             });
 
+            // Create deployment
             Post("/", async (ctx, ct) =>
             {
                 var deployment = this.Bind<DeploymentRequest>();
                 await Task.Run(() => pool.Create(Neo4jVersions.GetVersions().Single(v => v.Version == deployment.Version), deployment.Id));
-                return pool.Deployments.Single(d => d.Key == deployment.Id).AsDeploymentInfo();
+                return mapper.Map<Deployment>(pool.Deployments.Single(d => d.Key == deployment.Id));
             });
 
+            // Delete all deployments
             Delete("/all", async (ctx, ct) =>
             {
                 await Task.Run(() => pool.DeleteAll());
                 return (Response)null;
             });
 
+            // Delete single deployment
             Delete("/{Id}", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
@@ -38,8 +45,7 @@ namespace Neo4jManager.Host.Deployments
             });
 
             
-            // Instance Operations
-
+            // Start instance
             Post("/{Id}/start", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
@@ -47,6 +53,7 @@ namespace Neo4jManager.Host.Deployments
                 return (Response) null;
             });
 
+            // Stop instance
             Post("/{Id}/stop", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
@@ -54,6 +61,7 @@ namespace Neo4jManager.Host.Deployments
                 return (Response)null;
             });
 
+            // Restart instance
             Post("/{Id}/restart", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
@@ -61,6 +69,7 @@ namespace Neo4jManager.Host.Deployments
                 return (Response)null;
             });
 
+            // Clear instance (delete data)
             Post("/{Id}/clear", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
@@ -68,6 +77,7 @@ namespace Neo4jManager.Host.Deployments
                 return (Response)null;
             });
 
+            // Backup instance data
             Post("/{Id}/backup", async (ctx, ct) =>
             {
                 var backup = this.Bind<BackupRequest>();
@@ -75,6 +85,7 @@ namespace Neo4jManager.Host.Deployments
                 return (Response)null;
             });
 
+            // Restore instance data
             Post("/{Id}/restore", async (ctx, ct) =>
             {
                 var restore = this.Bind<RestoreRequest>();
@@ -82,6 +93,7 @@ namespace Neo4jManager.Host.Deployments
                 return (Response)null;
             });
 
+            // Modify instance config
             Post("/{Id}/config", async (ctx, ct) =>
             {
                 var config = this.Bind<ConfigureRequest>();
