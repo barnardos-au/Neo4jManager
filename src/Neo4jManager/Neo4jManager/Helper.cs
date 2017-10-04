@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Neo4jManager
 {
@@ -53,5 +54,13 @@ namespace Neo4jManager
             new FileCopy().MirrorFolders(extractFolder, targetDeploymentPath);
         }
 
+        public static string GenerateValidFolderName(string folderName)
+        {
+            var invalidFileNameChars = new string(Path.GetInvalidFileNameChars());
+            var invalidChars = Regex.Escape(invalidFileNameChars);
+            var invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
+
+            return Regex.Replace(folderName, invalidRegStr, "_");
+        }
     }
 }

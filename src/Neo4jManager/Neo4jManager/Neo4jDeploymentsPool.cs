@@ -26,7 +26,10 @@ namespace Neo4jManager
             Helper.Download(neo4jVersion, neo4JManagerConfig.Neo4jBasePath);
             Helper.Extract(neo4jVersion, neo4JManagerConfig.Neo4jBasePath);
 
-            var targetDeploymentPath = Path.Combine(neo4JManagerConfig.Neo4jBasePath, id);
+            var deploymentFolderName = Helper.GenerateValidFolderName(id);
+            if (string.IsNullOrEmpty(deploymentFolderName)) throw new ArgumentException("Error creating folder with given Id");
+
+            var targetDeploymentPath = Path.Combine(neo4JManagerConfig.Neo4jBasePath, deploymentFolderName);
             Helper.CopyDeployment(neo4jVersion, neo4JManagerConfig.Neo4jBasePath, targetDeploymentPath);
 
             var endpoints = new Neo4jEndpoints
