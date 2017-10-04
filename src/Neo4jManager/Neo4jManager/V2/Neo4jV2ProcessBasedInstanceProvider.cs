@@ -25,12 +25,14 @@ namespace Neo4jManager.V2
         protected readonly string neo4jConfigFolder;
         protected readonly Dictionary<string, ConfigEditor> configEditors;
 
-        protected Neo4jV2ProcessBasedInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
+        protected Neo4jV2ProcessBasedInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jVersion neo4jVersion, Neo4jEndpoints endpoints)
         {
             this.neo4jHomeFolder = neo4jHomeFolder;
             this.fileCopy = fileCopy;
 
             neo4jConfigFolder = Path.Combine(neo4jHomeFolder, "conf");
+
+            Version = neo4jVersion;
             Endpoints = endpoints;
 
             configEditors = new Dictionary<string, ConfigEditor>
@@ -101,6 +103,8 @@ namespace Neo4jManager.V2
         {
             configEditors[configFile].SetValue(key, value);
         }
+
+        public virtual Neo4jVersion Version { get; }
 
         public virtual Neo4jEndpoints Endpoints { get; }
 

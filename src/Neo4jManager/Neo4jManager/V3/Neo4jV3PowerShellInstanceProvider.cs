@@ -13,8 +13,8 @@ namespace Neo4jManager.V3
 
         private Process process;
 
-        public Neo4jV3PowerShellInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
-            : base(neo4jHomeFolder, fileCopy, endpoints)
+        public Neo4jV3PowerShellInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jVersion neo4jVersion, Neo4jEndpoints endpoints)
+            : base(neo4jHomeFolder, fileCopy, neo4jVersion, endpoints)
         {
         }
 

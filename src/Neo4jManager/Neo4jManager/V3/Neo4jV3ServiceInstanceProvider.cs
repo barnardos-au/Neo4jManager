@@ -10,8 +10,8 @@ namespace Neo4jManager.V3
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jV3ServiceInstanceProvider : Neo4jV3ProcessBasedInstanceProvider, INeo4jInstance
     {
-        public Neo4jV3ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
-            : base(neo4jHomeFolder, fileCopy, endpoints)
+        public Neo4jV3ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jVersion neo4jVersion, Neo4jEndpoints endpoints)
+            : base(neo4jHomeFolder, fileCopy, neo4jVersion, endpoints)
         {
         }
 

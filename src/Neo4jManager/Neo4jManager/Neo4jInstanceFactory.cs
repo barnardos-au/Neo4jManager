@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using Neo4jManager.V2;
 using Neo4jManager.V3;
 
@@ -9,38 +8,24 @@ namespace Neo4jManager
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jInstanceFactory : INeo4jInstanceFactory
     {
-        private readonly INeo4jManagerConfig neo4JManagerConfig;
         private readonly IFileCopy fileCopy;
+        private readonly string javaPath;
 
-        public Neo4jInstanceFactory(
-            INeo4jManagerConfig neo4JManagerConfig,
-            IFileCopy fileCopy)
+        public Neo4jInstanceFactory(IFileCopy fileCopy)
         {
-            this.neo4JManagerConfig = neo4JManagerConfig;
             this.fileCopy = fileCopy;
+
+            javaPath = Helper.FindJavaExe();
         }
 
-        public INeo4jInstance Create(Neo4jVersion neo4jVersion, string targetDeploymentPath, int portOffset)
+        public INeo4jInstance Create(string neo4jFolder, Neo4jVersion neo4jVersion, Neo4jEndpoints endpoints)
         {
-            var endpoints = new Neo4jEndpoints
-            {
-                HttpEndpoint = new Uri($"http://localhost:{neo4JManagerConfig.StartHttpPort + portOffset}"),
-            };
-
-            if (neo4jVersion.Architecture != Neo4jArchitecture.V2)
-            {
-                endpoints.BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + portOffset}");
-            }
-
-            var javaPath = Helper.FindJavaExe();
-            var neo4jFolder = Directory.GetDirectories(targetDeploymentPath)[0];
-
             INeo4jInstance instance;
 
             switch (neo4jVersion.Architecture)
             {
                 case Neo4jArchitecture.V2:
-                    instance = new Neo4jV2ServiceInstanceProvider(neo4jFolder, fileCopy, endpoints);
+                    instance = new Neo4jV2ServiceInstanceProvider(neo4jFolder, fileCopy, neo4jVersion, endpoints);
 
                     instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jServierPropertiesConfigFile, "dbms.security.auth_enabled", "false");
                     instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jPropertiesConfigFile, "allow_store_upgrade", "true");
@@ -62,7 +47,7 @@ namespace Neo4jManager
                     break;
 
                 case Neo4jArchitecture.V3:
-                    instance = new Neo4jV3JavaInstanceProvider(javaPath, neo4jFolder, fileCopy, endpoints);
+                    instance = new Neo4jV3JavaInstanceProvider(javaPath, neo4jFolder, fileCopy, neo4jVersion, endpoints);
 
                     const string configFile = Neo4jV3ProcessBasedInstanceProvider.Neo4jConfigFile;
                     instance.Configure(configFile, "dbms.security.auth_enabled", "false");

@@ -88,8 +88,8 @@ namespace Neo4jManager.V2
             }
         }
 
-        public Neo4jV2ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
-            : base(neo4jHomeFolder, fileCopy, endpoints)
+        public Neo4jV2ServiceInstanceProvider(string neo4jHomeFolder, IFileCopy fileCopy, Neo4jVersion neo4jVersion, Neo4jEndpoints endpoints)
+            : base(neo4jHomeFolder, fileCopy, neo4jVersion, endpoints)
         {
         }
 

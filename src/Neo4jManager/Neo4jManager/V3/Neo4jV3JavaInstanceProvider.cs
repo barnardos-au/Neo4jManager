@@ -17,8 +17,8 @@ namespace Neo4jManager.V3
         private Process process;
 
 
-        public Neo4jV3JavaInstanceProvider(string javaPath, string neo4jHomeFolder, IFileCopy fileCopy, Neo4jEndpoints endpoints)
-            :base(neo4jHomeFolder, fileCopy, endpoints)
+        public Neo4jV3JavaInstanceProvider(string javaPath, string neo4jHomeFolder, IFileCopy fileCopy, Neo4jVersion neo4jVersion, Neo4jEndpoints endpoints)
+            :base(neo4jHomeFolder, fileCopy, neo4jVersion, endpoints)
         {
             this.javaPath = javaPath;
         }
@@ -42,8 +42,6 @@ namespace Neo4jManager.V3
 
         public override async Task Stop(CancellationToken token)
         {
-            if (process == null || process.HasExited) return;
-
             await Task.Run(() =>
             {
                 Stop();
@@ -52,6 +50,8 @@ namespace Neo4jManager.V3
 
         private void Stop()
         {
+            if (process == null || process.HasExited) return;
+
             process.Kill();
             process.WaitForExit(defaultWaitForKill);
         }
