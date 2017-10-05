@@ -1,9 +1,9 @@
 ﻿<div class="col-6 col-sm-3 placeholder">
     <div>
         <img style="width: 200px; " src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-        <h2 style="position: absolute; top: 20%; left: 0; width: 100%; text-align: center; color: white; ">@Current.Version.Architecture</h2>
-        <h4 style="position: absolute; top: 35%; left: 0; width: 100%; text-align: center; color: white;">@Current.Version.VersionNumber</h4>
+        <h2 style="position: absolute; top: 20%; left: 0; width: 100%; text-align: center; color: white; ">@Model.Version.Architecture</h2>
+        <h4 style="position: absolute; top: 35%; left: 0; width: 100%; text-align: center; color: white;">@Model.Version.VersionNumber</h4>
     </div>
-    <h4>Id: @Current.Id</h4>
-    <a href="@Current.Endpoints.HttpEndpoint">@Current.Endpoints.HttpEndpoint</a>
+    <h4>Id: @Model.Id</h4>
+    <a href="@Current.Endpoints.HttpEndpoint">@Model.Endpoints.HttpEndpoint</a>
 </div>

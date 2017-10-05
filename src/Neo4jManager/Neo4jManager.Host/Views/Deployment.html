@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Neo4jManager - Home</title>
+    <title>Neo4jManager - Deployment @Model.Id</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
@@ -14,6 +14,7 @@
     <!-- Custom styles for this template -->
     <link href="/content/css/dashboard.css" rel="stylesheet">
     <link href="/content/css/font-awesome.min.css" rel="stylesheet">
+
 </head>
 
 <body>
@@ -25,14 +26,14 @@
 
         <div class="collapse navbar-collapse" id="navbarsExampleDefault">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/versions">Versions</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/deployments">Deployments</a>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/deployments">Deployments <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
         </div>
@@ -49,38 +50,16 @@
             </nav>
 
             <main class="col-sm-9 ml-sm-auto col-md-10 pt-3" role="main">
-                <h1>Dashboard</h1>
+                <h1>Deployment @Model.Id</h1>
 
                 <section class="row text-center placeholders">
-                    @Each.Deployments
-                        @Partial['DeploymentPanel', Current]
-                    @EndEach
+                    @Partial['DeploymentPanel', Model]
                 </section>
-
-                <h2>Deployments</h2>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Id</th>
-                                <th>Version</th>
-                                <th>HTTP</th>
-                                <th>HTTPS</th>
-                                <th>Bolt</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @Each.Deployments
-                            <tr>
-                                <td>@Current.Id</td>
-                                <td>@Current.Version.VersionNumber</td>
-                                <td><a href="@Current.Endpoints.HttpEndpoint">@Current.Endpoints.HttpEndpoint</a></td>
-                                <td><a href="@Current.Endpoints.HttpsEndpoint">@Current.Endpoints.HttpsEndpoint</a></td>
-                                <td>@Current.Endpoints.BoltEndpoint</td>
-                            </tr>
-                            @EndEach
-                        </tbody>
-                    </table>
+                <div>
+                    <button type="button" class="btn btn-success"><i class="fa fa-play"></i> Start</button>
+                    <button type="button" class="btn btn-danger"><i class="fa fa-stop"></i> Stop</button>
+                    <button type="button" class="btn btn-warning"><i class="fa fa-refresh"></i> Restart</button>
+                    <button type="button" class="btn btn-info"><i class="fa fa-trash"></i> Clear</button>
                 </div>
             </main>
         </div>

@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Neo4jManager - Home</title>
+    <title>Neo4jManager - Versions</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
@@ -25,11 +25,11 @@
 
         <div class="collapse navbar-collapse" id="navbarsExampleDefault">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-                </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/versions">Versions</a>
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/versions">Versions <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/deployments">Deployments</a>
@@ -49,34 +49,26 @@
             </nav>
 
             <main class="col-sm-9 ml-sm-auto col-md-10 pt-3" role="main">
-                <h1>Dashboard</h1>
-
-                <section class="row text-center placeholders">
-                    @Each.Deployments
-                        @Partial['DeploymentPanel', Current]
-                    @EndEach
-                </section>
-
-                <h2>Deployments</h2>
+                <h1>Versions</h1>
+                <p>The following lists the available Neo4j versions for deployment.</p>
+                <h2>Available Versions</h2>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>Id</th>
                                 <th>Version</th>
-                                <th>HTTP</th>
-                                <th>HTTPS</th>
-                                <th>Bolt</th>
+                                <th>Architecture</th>
+                                <th>Download Url</th>
+                                <th>Zip Name</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @Each.Deployments
+                            @Each.Versions
                             <tr>
-                                <td>@Current.Id</td>
-                                <td>@Current.Version.VersionNumber</td>
-                                <td><a href="@Current.Endpoints.HttpEndpoint">@Current.Endpoints.HttpEndpoint</a></td>
-                                <td><a href="@Current.Endpoints.HttpsEndpoint">@Current.Endpoints.HttpsEndpoint</a></td>
-                                <td>@Current.Endpoints.BoltEndpoint</td>
+                                <td>@Current.VersionNumber</td>
+                                <td>@Current.Architecture</td>
+                                <td><a href="@Current.DownloadUrl">@Current.DownloadUrl</a></td>
+                                <td>@Current.ZipFileName</td>
                             </tr>
                             @EndEach
                         </tbody>

@@ -10,7 +10,17 @@ namespace Neo4jManager.Host.Versions
         public VersionsModule(IMapper mapper) : base("/versions")
         {
             // Get all versions
-            Get("/", _ => mapper.Map<IEnumerable<Version>>(Neo4jVersions.GetVersions()));
+            Get("/", _ =>
+            {
+                var viewModel = new VersionsViewModel
+                {
+                    Versions = mapper.Map<IEnumerable<Version>>(Neo4jVersions.GetVersions())
+                };
+
+                return Negotiate
+                    .WithModel(viewModel)
+                    .WithView("Versions");
+            });
 
             // Get single version by number
             Get("/{VersionNumber}", ctx =>
@@ -18,7 +28,6 @@ namespace Neo4jManager.Host.Versions
                 string versionNumber = ctx.VersionNumber.ToString();
                 return mapper.Map<Version>(Neo4jVersions.GetVersions().Single(v => v.Version == versionNumber));
             });
-
         }
     }
 }

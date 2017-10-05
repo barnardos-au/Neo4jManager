@@ -12,13 +12,27 @@ namespace Neo4jManager.Host.Deployments
         public DeploymentsModule(INeo4jDeploymentsPool pool, IMapper mapper) : base("/deployments")
         {
             // Get all deployments
-            Get("/", _ => mapper.Map<IEnumerable<Deployment>>(pool.Deployments));
+            Get("/", _ =>
+            {
+                var viewModel = new DeploymentsViewModel
+                {
+                    Deployments = mapper.Map<IEnumerable<Deployment>>(pool.Deployments)
+                };
+
+                return Negotiate
+                    .WithModel(viewModel)
+                    .WithView("Deployments");
+            });
 
             // Get single deployment
             Get("/{Id}", ctx =>
             {
                 string id = ctx.Id.ToString();
-                return mapper.Map<Deployment>(pool.Deployments.Single(d => d.Key == id));
+                var viewModel = mapper.Map<Deployment>(pool.Deployments.Single(d => d.Key == id));
+
+                return Negotiate
+                    .WithModel(viewModel)
+                    .WithView("Deployment");
             });
 
             // Create deployment
