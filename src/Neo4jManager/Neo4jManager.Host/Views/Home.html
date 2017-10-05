@@ -51,26 +51,9 @@
                 <h1>Dashboard</h1>
 
                 <section class="row text-center placeholders">
-                    <div class="col-6 col-sm-3 placeholder">
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-                        <h4>Id: 1</h4>
-                        <a href="http://localhost:7401/">http://localhost:7401/</a>
-                    </div>
-                    <div class="col-6 col-sm-3 placeholder">
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-                        <h4>Id: 2</h4>
-                        <a href="http://localhost:7402/">http://localhost:7402/</a>
-                    </div>
-                    <div class="col-6 col-sm-3 placeholder">
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-                        <h4>Id: 3</h4>
-                        <a href="http://localhost:7403/">http://localhost:7403/</a>
-                    </div>
-                    <div class="col-6 col-sm-3 placeholder">
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-                        <h4>Id: 4</h4>
-                        <a href="http://localhost:7404/">http://localhost:7404/</a>
-                    </div>
+                    @Each.Deployments
+                        @Partial['DeploymentPanel', Current]
+                    @EndEach
                 </section>
 
                 <h2>Deployments</h2>
@@ -86,34 +69,15 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @Each.Deployments
                             <tr>
-                                <td>1</td>
-                                <td>3.2.3</td>
-                                <td><a href="http://localhost:7401/">http://localhost:7401/</a></td>
-                                <td><a href="https://localhost:7451/">https://localhost:7451/</a></td>
-                                <td>bolt://localhost:7687/</td>
+                                <td>@Current.Id</td>
+                                <td>@Current.Version.VersionNumber</td>
+                                <td><a href="@Current.Endpoints.HttpEndpoint">@Current.Endpoints.HttpEndpoint</a></td>
+                                <td><a href="@Current.Endpoints.HttpsEndpoint">@Current.Endpoints.HttpsEndpoint</a></td>
+                                <td>@Current.Endpoints.BoltEndpoint</td>
                             </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>3.2.3</td>
-                                <td><a href="http://localhost:7402/">http://localhost:7402/</a></td>
-                                <td><a href="https://localhost:7452/">https://localhost:7452/</a></td>
-                                <td>bolt://localhost:7688/</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>2.3.2</td>
-                                <td><a href="http://localhost:7403/">http://localhost:7403/</a></td>
-                                <td><a href="https://localhost:7453/">https://localhost:7453/</a></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>2.3.2</td>
-                                <td><a href="http://localhost:7404/">http://localhost:7404/</a></td>
-                                <td><a href="https://localhost:7454/">https://localhost:7454/</a></td>
-                                <td></td>
-                            </tr>
+                            @EndEach
                         </tbody>
                     </table>
                 </div>
