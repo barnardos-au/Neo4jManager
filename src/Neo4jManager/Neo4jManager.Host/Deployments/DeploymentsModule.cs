@@ -35,12 +35,22 @@ namespace Neo4jManager.Host.Deployments
                     .WithView("Deployment");
             });
 
+            // Get all deployments
+            Get("/create", _ =>
+            {
+                return Negotiate
+                    .WithModel(new Deployment())
+                    .WithView("Create");
+            });
+
             // Create deployment
             Post("/", async (ctx, ct) =>
             {
                 var deployment = this.Bind<DeploymentRequest>();
                 await Task.Run(() => pool.Create(Neo4jVersions.GetVersions().Single(v => v.Version == deployment.Version), deployment.Id));
-                return mapper.Map<Deployment>(pool.Deployments.Single(d => d.Key == deployment.Id));
+
+                var location = string.Format("{0}/{1}", ModulePath, deployment.Id);
+                return Response.AsRedirect(location);
             });
 
             // Delete all deployments
