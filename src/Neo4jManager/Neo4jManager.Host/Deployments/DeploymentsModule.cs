@@ -40,7 +40,11 @@ namespace Neo4jManager.Host.Deployments
             {
                 var deployment = this.Bind<DeploymentRequest>();
                 await Task.Run(() => pool.Create(Neo4jVersions.GetVersions().Single(v => v.Version == deployment.Version), deployment.Id));
-                return mapper.Map<Deployment>(pool.Single(d => d.Key == deployment.Id));
+                var viewModel = mapper.Map<Deployment>(pool.Single(d => d.Key == deployment.Id));
+
+                return Negotiate
+                    .WithModel(viewModel)
+                    .WithView("Deployment");
             });
 
             // Delete all deployments
