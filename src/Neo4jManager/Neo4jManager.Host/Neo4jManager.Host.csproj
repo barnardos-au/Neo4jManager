@@ -46,6 +46,9 @@
     <Content Include="Content\scripts\neo4jmanager.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Views\Create.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Views\Deployment.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
