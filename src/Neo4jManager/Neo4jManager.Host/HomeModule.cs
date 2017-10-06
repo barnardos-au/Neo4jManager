@@ -14,7 +14,7 @@ namespace Neo4jManager.Host
             {
                 var viewModel = new DeploymentsViewModel
                 {
-                    Deployments = mapper.Map<IEnumerable<Deployment>>(pool.Deployments)
+                    Deployments = mapper.Map<IEnumerable<Deployment>>(pool)
                 };
 
                 return Negotiate

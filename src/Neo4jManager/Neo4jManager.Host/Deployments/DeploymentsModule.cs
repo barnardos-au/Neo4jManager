@@ -16,7 +16,7 @@ namespace Neo4jManager.Host.Deployments
             {
                 var viewModel = new DeploymentsViewModel
                 {
-                    Deployments = mapper.Map<IEnumerable<Deployment>>(pool.Deployments)
+                    Deployments = mapper.Map<IEnumerable<Deployment>>(pool)
                 };
 
                 return Negotiate
@@ -28,7 +28,7 @@ namespace Neo4jManager.Host.Deployments
             Get("/{Id}", ctx =>
             {
                 string id = ctx.Id.ToString();
-                var viewModel = mapper.Map<Deployment>(pool.Deployments.Single(d => d.Key == id));
+                var viewModel = mapper.Map<Deployment>(pool.Single(d => d.Key == id));
 
                 return Negotiate
                     .WithModel(viewModel)
@@ -40,7 +40,7 @@ namespace Neo4jManager.Host.Deployments
             {
                 var deployment = this.Bind<DeploymentRequest>();
                 await Task.Run(() => pool.Create(Neo4jVersions.GetVersions().Single(v => v.Version == deployment.Version), deployment.Id));
-                return mapper.Map<Deployment>(pool.Deployments.Single(d => d.Key == deployment.Id));
+                return mapper.Map<Deployment>(pool.Single(d => d.Key == deployment.Id));
             });
 
             // Delete all deployments
@@ -63,7 +63,7 @@ namespace Neo4jManager.Host.Deployments
             Post("/{Id}/start", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
-                await pool.Deployments[id].Start(ct);
+                await pool[id].Start(ct);
                 return (Response) null;
             });
 
@@ -71,7 +71,7 @@ namespace Neo4jManager.Host.Deployments
             Post("/{Id}/stop", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
-                await pool.Deployments[id].Stop(ct);
+                await pool[id].Stop(ct);
                 return (Response)null;
             });
 
@@ -79,7 +79,7 @@ namespace Neo4jManager.Host.Deployments
             Post("/{Id}/restart", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
-                await pool.Deployments[id].Restart(ct);
+                await pool[id].Restart(ct);
                 return (Response)null;
             });
 
@@ -87,7 +87,7 @@ namespace Neo4jManager.Host.Deployments
             Post("/{Id}/clear", async (ctx, ct) =>
             {
                 string id = ctx.Id.ToString();
-                await pool.Deployments[id].Clear(ct);
+                await pool[id].Clear(ct);
                 return (Response)null;
             });
 
@@ -95,7 +95,7 @@ namespace Neo4jManager.Host.Deployments
             Post("/{Id}/backup", async (ctx, ct) =>
             {
                 var backup = this.Bind<BackupRequest>();
-                await pool.Deployments[backup.Id].Backup(ct, backup.DestinationPath, backup.StopInstanceBeforeBackup);
+                await pool[backup.Id].Backup(ct, backup.DestinationPath, backup.StopInstanceBeforeBackup);
                 return (Response)null;
             });
 
@@ -103,7 +103,7 @@ namespace Neo4jManager.Host.Deployments
             Post("/{Id}/restore", async (ctx, ct) =>
             {
                 var restore = this.Bind<RestoreRequest>();
-                await pool.Deployments[restore.Id].Restore(ct, restore.SourcePath);
+                await pool[restore.Id].Restore(ct, restore.SourcePath);
                 return (Response)null;
             });
 
@@ -111,7 +111,7 @@ namespace Neo4jManager.Host.Deployments
             Post("/{Id}/config", async (ctx, ct) =>
             {
                 var config = this.Bind<ConfigureRequest>();
-                await Task.Run(() => pool.Deployments[config.Id].Configure(config.ConfigFile, config.Key, config.Value));
+                await Task.Run(() => pool[config.Id].Configure(config.ConfigFile, config.Key, config.Value));
                 return (Response)null;
             });
         }
