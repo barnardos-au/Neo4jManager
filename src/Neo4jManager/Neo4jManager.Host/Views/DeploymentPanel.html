@@ -4,6 +4,6 @@
         <h2 style="position: absolute; top: 20%; left: 0; width: 100%; text-align: center; color: white; ">@Model.Version.Architecture</h2>
         <h4 style="position: absolute; top: 35%; left: 0; width: 100%; text-align: center; color: white;">@Model.Version.VersionNumber</h4>
     </div>
-    <h4>Id: @Model.Id</h4>
+    <h4>@Model.Id (@Model.Status)</h4>
     <a href="@Current.Endpoints.HttpEndpoint">@Model.Endpoints.HttpEndpoint</a>
 </div>

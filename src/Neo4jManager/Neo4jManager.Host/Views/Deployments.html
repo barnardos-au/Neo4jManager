@@ -61,6 +61,7 @@
                             <th>HTTP</th>
                             <th>HTTPS</th>
                             <th>Bolt</th>
+                            <th>Status</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -71,6 +72,7 @@
                             <td><a href="@Current.Endpoints.HttpEndpoint">@Current.Endpoints.HttpEndpoint</a></td>
                             <td><a href="@Current.Endpoints.HttpsEndpoint">@Current.Endpoints.HttpsEndpoint</a></td>
                             <td>@Current.Endpoints.BoltEndpoint</td>
+                            <td>@Current.Status</td>
                         </tr>
                         @EndEach
                         </tbody>
