@@ -6,7 +6,7 @@ using System.IO;
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class Neo4jDeploymentsPool : INeo4jDeploymentsPool
+    public class Neo4jDeploymentsPool : Dictionary<string, INeo4jInstance>, INeo4jDeploymentsPool
     {
         private readonly INeo4jManagerConfig neo4JManagerConfig;
         private readonly INeo4jInstanceFactory neo4jInstanceFactory;
@@ -17,8 +17,6 @@ namespace Neo4jManager
         {
             this.neo4JManagerConfig = neo4JManagerConfig;
             this.neo4jInstanceFactory = neo4jInstanceFactory;
-
-            Deployments = new Dictionary<string, INeo4jInstance>();
         }
 
         public INeo4jInstance Create(Neo4jVersion neo4jVersion, string id)
@@ -34,41 +32,39 @@ namespace Neo4jManager
 
             var endpoints = new Neo4jEndpoints
             {
-                HttpEndpoint = new Uri($"http://localhost:{neo4JManagerConfig.StartHttpPort + Deployments.Count}"),
+                HttpEndpoint = new Uri($"http://localhost:{neo4JManagerConfig.StartHttpPort + Count}"),
             };
 
             if (neo4jVersion.Architecture != Neo4jArchitecture.V2)
             {
-                endpoints.BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + Deployments.Count}");
+                endpoints.BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + Count}");
             }
 
             var neo4jFolder = Directory.GetDirectories(targetDeploymentPath)[0];
 
             var instance = neo4jInstanceFactory.Create(neo4jFolder, neo4jVersion, endpoints);
 
-            Deployments.Add(id, instance);
+            Add(id, instance);
 
             return instance;
         }
 
         public void Delete(string id)
         {
-            var instance = Deployments[id];
+            var instance = this[id];
             instance.Dispose();
-            Deployments.Remove(id);
+            Remove(id);
         }
 
         public void DeleteAll()
         {
-            foreach (var instance in Deployments.Values)
+            foreach (var instance in Values)
             {
                 instance.Dispose();
             }
 
-            Deployments.Clear();
+            Clear();
         }
-
-        public Dictionary<string, INeo4jInstance> Deployments { get; }
 
         public void Dispose()
         {
