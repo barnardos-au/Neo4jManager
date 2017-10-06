@@ -12,6 +12,7 @@
     <None Remove="Content\fonts\fontawesome-webfont.woff" />
     <None Remove="Content\fonts\fontawesome-webfont.woff2" />
     <None Remove="Content\fonts\FontAwesome.otf" />
+    <None Remove="Content\scripts\neo4jmanager.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +41,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\fonts\FontAwesome.otf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\scripts\neo4jmanager.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Views\Deployment.html">

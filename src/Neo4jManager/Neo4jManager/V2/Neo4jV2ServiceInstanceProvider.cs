@@ -111,6 +111,8 @@ namespace Neo4jManager.V2
             await StartService(token);
         }
 
+        public Status Status { get; } = Status.Stopped;
+
         public void Dispose()
         {
             Neo4jV2ServiceController.StopService(neo4jHomeFolder);

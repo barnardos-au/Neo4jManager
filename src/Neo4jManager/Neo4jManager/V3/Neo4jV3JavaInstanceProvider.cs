@@ -48,6 +48,8 @@ namespace Neo4jManager.V3
             }, token);
         }
 
+        public Status Status { get; } = Status.Stopped;
+
         private void Stop()
         {
             if (process == null || process.HasExited) return;

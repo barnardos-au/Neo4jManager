@@ -19,5 +19,6 @@ namespace Neo4jManager
         Neo4jVersion Version { get; }
         Neo4jEndpoints Endpoints { get; }
         string DataPath { get; }
+        Status Status { get; }
     }
 }

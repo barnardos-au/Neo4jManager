@@ -33,6 +33,8 @@ namespace Neo4jManager.V3
             await StartService(token);
         }
 
+        public Status Status { get; } = Status.Stopped;
+
         public void Dispose()
         {
             StopServiceProcess();

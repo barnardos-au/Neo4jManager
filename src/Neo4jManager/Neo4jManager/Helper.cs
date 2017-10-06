@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Neo4jManager
@@ -61,6 +63,24 @@ namespace Neo4jManager
             var invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
 
             return Regex.Replace(folderName, invalidRegStr, "_");
+        }
+
+        public static string GetDescription(this Enum en)
+        {
+            var type = en.GetType();
+
+            var memInfo = type.GetMember(en.ToString());
+
+            if (memInfo == null || memInfo.Length <= 0) return en.ToString();
+
+            var attrs = memInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+            if (attrs != null && attrs.Length > 0)
+            {
+                return ((DescriptionAttribute)attrs[0]).Description;
+            }
+
+            return en.ToString();
         }
     }
 }

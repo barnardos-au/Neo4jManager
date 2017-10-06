@@ -35,7 +35,8 @@ namespace Neo4jManager.Host
                     .ForMember(dest => dest.Id, opts => opts.MapFrom(s => s.Key))
                     .ForMember(dest => dest.DataPath, opts => opts.MapFrom(s => s.Value.DataPath))
                     .ForMember(dest => dest.Version, opts => opts.MapFrom(s => s.Value.Version))
-                    .ForMember(dest => dest.Endpoints, opts => opts.MapFrom(s => s.Value.Endpoints));
+                    .ForMember(dest => dest.Endpoints, opts => opts.MapFrom(s => s.Value.Endpoints))
+                    .ForMember(dest => dest.Status, opts => opts.MapFrom(s => s.Value.Status.GetDescription()));
             });
             services.AddTransient(provider => mapperConfig.CreateMapper());
 

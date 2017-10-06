@@ -8,5 +8,6 @@ namespace Neo4jManager.Host.Deployments
         public string DataPath { get; set; }
         public Endpoints Endpoints { get; set; }
         public Version Version { get; set; }
+        public string Status { get; set; }
     }
 }
