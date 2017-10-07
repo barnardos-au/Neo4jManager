@@ -1,11 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Reflection;
+using System.ServiceProcess;
 using System.Text.RegularExpressions;
 
 namespace Neo4jManager
@@ -65,6 +66,43 @@ namespace Neo4jManager
             return Regex.Replace(folderName, invalidRegStr, "_");
         }
 
+        public static void KillNeo4jServices()
+        {
+            var neo4jServices = ServiceController.GetServices()
+                .Where(s => s.ServiceName.Contains("neo4j", StringComparison.OrdinalIgnoreCase));
+
+            foreach (var service in neo4jServices)
+            {
+                try
+                {
+                    service.Stop();
+                    service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    using (var process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "SC.EXE",
+                            Arguments = $"delete {service.ServiceName}"
+                        }
+                    })
+                    {
+                        process.Start();
+                        process.WaitForExit(10000);
+                    }
+                }
+                catch
+                {
+                }
+            }
+        }
+
         public static string GetDescription(this Enum en)
         {
             var type = en.GetType();
@@ -81,6 +119,11 @@ namespace Neo4jManager
             }
 
             return en.ToString();
+        }
+
+        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        {
+            return source != null && toCheck != null && source.IndexOf(toCheck, comp) >= 0;
         }
     }
 }

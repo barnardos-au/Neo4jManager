@@ -65,7 +65,7 @@ namespace Neo4jManager.V2
             {
                 var args = new StringBuilder()
                     .Append(" -NoProfile")
-                    //.Append(" -NonInteractive")
+                    .Append(" -NonInteractive")
                     .Append(" -NoLogo")
                     .Append(" -ExecutionPolicy Bypass")
                     .Append(" -Command ")

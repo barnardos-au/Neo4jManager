@@ -49,7 +49,12 @@
             </nav>
 
             <main class="col-sm-9 ml-sm-auto col-md-10 pt-3" role="main">
-                <h1>Deployments<a href="/Deployments/create" class="btn btn-primary pull-right">Create Deployment</a></h1>
+                <h1>Deployments
+                    <div class="pull-right">
+                        <a id="delete-all-button" href="/Deployments/delete" class="btn btn-danger">Delete All</a>
+                        <a id="create-deployment-button" href="/Deployments/create" class="btn btn-primary">Create Deployment</a>
+                    </div>
+                </h1>
                 <p>The following lists the provisioned Neo4j deployments.</p>
                 <h2>Provisioned Deployments</h2>
                 <div class="table-responsive">
@@ -85,7 +90,7 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 </body>
