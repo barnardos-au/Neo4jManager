@@ -29,7 +29,6 @@ namespace Neo4jManager
 
                     instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jServierPropertiesConfigFile, "dbms.security.auth_enabled", "false");
                     instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jPropertiesConfigFile, "allow_store_upgrade", "true");
-                    instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jWrapperConfigFile, "wrapper.java.additional.1", "-Dfile.encoding=UTF-8");
                     instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jWrapperConfigFile, "wrapper.name", $"Neo4j{endpoints.HttpEndpoint.Port}");
 
                     instance.Configure(Neo4jV2ProcessBasedInstanceProvider.Neo4jServierPropertiesConfigFile, "org.neo4j.server.webserver.port", $"{endpoints.HttpEndpoint.Port}");
@@ -52,7 +51,6 @@ namespace Neo4jManager
                     const string configFile = Neo4jV3ProcessBasedInstanceProvider.Neo4jConfigFile;
                     instance.Configure(configFile, "dbms.security.auth_enabled", "false");
                     instance.Configure(configFile, "dbms.allow_format_migration", "true");
-                    instance.Configure(configFile, "dbms.jvm.additional.1", "-Dfile.encoding=UTF-8");
                     instance.Configure(configFile, "dbms.directories.import", "");
 
                     instance.Configure(configFile, "dbms.connector.http.listen_address", $":{endpoints.HttpEndpoint.Port}");
