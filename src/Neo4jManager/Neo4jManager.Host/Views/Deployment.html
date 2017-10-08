@@ -19,7 +19,7 @@
 
 <body>
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-    <a class="navbar-brand" href="#">Neo4jManager</a>
+    <a class="navbar-brand" href="/">Neo4jManager</a>
     <button class="navbar-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -50,7 +50,12 @@
         </nav>
 
         <main class="col-sm-9 ml-sm-auto col-md-10 pt-3" role="main">
-            <h1>Deployment @Model.Id</h1>
+            <h1>Deployment @Model.Id
+                <div class="pull-right">
+                    <img class="ajax-loader-image-1" src="/content/image/ajax-loader.gif" style="display: none;" />
+                    <button id="delete-button" type="button" class="btn btn-danger" data-action="/deployments/@Model.Id"><i class="fa fa-trash"></i> Delete</button>
+                </div>
+            </h1>
 
             <section class="row text-center placeholders">
                 @Partial['DeploymentPanel', Model]
@@ -60,7 +65,7 @@
                 <button id="stop-button" type="button" class="btn btn-danger" data-action="/deployments/@Model.Id/stop"><i class="fa fa-stop"></i> Stop</button>
                 <button id="restart-button" type="button" class="btn btn-warning" data-action="/deployments/@Model.Id/restart"><i class="fa fa-refresh"></i> Restart</button>
                 <button id="clear-button" type="button" class="btn btn-info" data-action="/deployments/@Model.Id/clear"><i class="fa fa-trash"></i> Clear</button>
-                <img class="ajax-loader-image" src="/content/image/ajax-loader.gif" style="display: none;" />
+                <img class="ajax-loader-image-2" src="/content/image/ajax-loader.gif" style="display: none;" />
             </div>
         </main>
     </div>
@@ -75,22 +80,38 @@
     
 <script type="text/javascript">
     $(function() {
+        $("#delete-button").click(function () {
+            $(".ajax-loader-image-1").show();
+            var action = $(this).data("action");
+            $.ajax({
+                type: "DELETE",
+                url: action,
+                success: function () {
+                    $(".ajax-loader-image-1").hide();
+                    location.href = "/deployments";
+                },
+                error: function (e, h) {
+                    $(".ajax-loader-image-1").hide();
+                }
+            });
+        });
+
         $("#start-button").click(invokeAction);
         $("#stop-button").click(invokeAction);
         $("#restart-button").click(invokeAction);
         $("#clear-button").click(invokeAction);
 
         function invokeAction() {
-            $(".ajax-loader-image").show();
+            $(".ajax-loader-image-2").show();
             var action = $(this).data("action");
             $.ajax({
                 type: "POST",
                 url: action,
                 success: function () {
-                    $(".ajax-loader-image").hide();
+                    $(".ajax-loader-image-2").hide();
                 },
                 error: function() {
-                    $(".ajax-loader-image").hide();
+                    $(".ajax-loader-image-2").hide();
                 }
             });
         };

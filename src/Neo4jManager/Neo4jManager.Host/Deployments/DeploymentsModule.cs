@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Nancy;
 using Nancy.ModelBinding;
+using Neo4jManager.Host.Versions;
 
 namespace Neo4jManager.Host.Deployments
 {
@@ -35,11 +36,17 @@ namespace Neo4jManager.Host.Deployments
                     .WithView("Deployment");
             });
 
-            // Get all deployments
+            // Create new deployment
             Get("/create", _ =>
             {
+                var viewModel = new DeploymentRequest
+                {
+                    Versions = mapper.Map<IEnumerable<Version>>(Neo4jVersions.GetVersions()),
+                    Id = $"{pool.Count + 1}" 
+                };
+
                 return Negotiate
-                    .WithModel(new Deployment())
+                    .WithModel(viewModel)
                     .WithView("Create");
             });
 
