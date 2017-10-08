@@ -29,8 +29,8 @@ namespace Neo4jManager.V3
 
         public override async Task Restart(CancellationToken token)
         {
-            await StopService(token);
-            await StartService(token);
+            await Stop(token);
+            await Start(token);
         }
 
         public Status Status { get; } = Status.Stopped;
