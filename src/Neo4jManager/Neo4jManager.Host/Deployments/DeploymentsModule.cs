@@ -51,7 +51,7 @@ namespace Neo4jManager.Host.Deployments
             });
 
             // Create deployment
-            Post("/", async (ctx, ct) =>
+            Post("/create", async (ctx, ct) =>
             {
                 var deployment = this.Bind<DeploymentRequest>();
                 await Task.Run(() => pool.Create(Neo4jVersions.GetVersions().Single(v => v.Version == deployment.Version), deployment.Id));
