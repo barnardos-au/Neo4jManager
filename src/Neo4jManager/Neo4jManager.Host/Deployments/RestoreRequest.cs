@@ -2,7 +2,6 @@
 {
     public class RestoreRequest
     {
-        public string Id { get; set; }
         public string SourcePath { get; set; }
     }
 }

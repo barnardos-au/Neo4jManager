@@ -2,7 +2,6 @@
 {
     public class BackupRequest
     {
-        public string Id { get; set; }
         public string DestinationPath { get; set; }
         public bool StopInstanceBeforeBackup { get; set; } = true;
     }

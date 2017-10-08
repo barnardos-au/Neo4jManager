@@ -112,24 +112,27 @@ namespace Neo4jManager.Host.Deployments
             // Backup instance data
             Post("/{Id}/backup", async (ctx, ct) =>
             {
+                string id = ctx.Id.ToString();
                 var backup = this.Bind<BackupRequest>();
-                await pool[backup.Id].Backup(ct, backup.DestinationPath, backup.StopInstanceBeforeBackup);
+                await pool[id].Backup(ct, backup.DestinationPath, backup.StopInstanceBeforeBackup);
                 return (Response)null;
             });
 
             // Restore instance data
             Post("/{Id}/restore", async (ctx, ct) =>
             {
+                string id = ctx.Id.ToString();
                 var restore = this.Bind<RestoreRequest>();
-                await pool[restore.Id].Restore(ct, restore.SourcePath);
+                await pool[id].Restore(ct, restore.SourcePath);
                 return (Response)null;
             });
 
             // Modify instance config
             Post("/{Id}/config", async (ctx, ct) =>
             {
+                string id = ctx.Id.ToString();
                 var config = this.Bind<ConfigureRequest>();
-                await Task.Run(() => pool[config.Id].Configure(config.ConfigFile, config.Key, config.Value));
+                await Task.Run(() => pool[id].Configure(config.ConfigFile, config.Key, config.Value));
                 return (Response)null;
             });
         }
