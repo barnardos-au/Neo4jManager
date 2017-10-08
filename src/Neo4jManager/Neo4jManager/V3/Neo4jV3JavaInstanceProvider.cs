@@ -72,7 +72,9 @@ namespace Neo4jManager.V3
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = javaPath,
-                    Arguments = GetJavaCmdArguments()
+                    Arguments = GetJavaCmdArguments(),
+                    UseShellExecute = false,
+                    CreateNoWindow = true
                 }
             };
         }

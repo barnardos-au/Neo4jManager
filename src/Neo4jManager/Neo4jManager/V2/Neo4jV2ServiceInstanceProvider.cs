@@ -82,6 +82,7 @@ namespace Neo4jManager.V2
                     {
                         FileName = "POWERSHELL.EXE",
                         Arguments = args,
+                        UseShellExecute = false,
                         RedirectStandardError = true
                     }
                 };

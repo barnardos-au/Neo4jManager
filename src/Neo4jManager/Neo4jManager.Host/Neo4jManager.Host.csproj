@@ -1,28 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Content\font-awesome.min.css" />
-    <None Remove="Content\fonts\fontawesome-webfont.eot" />
-    <None Remove="Content\fonts\fontawesome-webfont.svg" />
-    <None Remove="Content\fonts\fontawesome-webfont.ttf" />
-    <None Remove="Content\fonts\fontawesome-webfont.woff" />
-    <None Remove="Content\fonts\fontawesome-webfont.woff2" />
-    <None Remove="Content\fonts\FontAwesome.otf" />
-    <None Remove="Content\image\ajax-loader.gif" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Content\css\font-awesome.min.css">
+    <Content Include="Content\css\dashboard.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Content\css\dashboard.css">
+    <Content Include="Content\css\font-awesome.min.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\fonts\fontawesome-webfont.eot">
@@ -52,7 +38,13 @@
     <Content Include="Views\Deployment.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Views\DeploymentPanel.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Views\Deployments.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Home.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Views\Versions.html">
@@ -61,21 +53,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Views\Home.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Views\DeploymentPanel.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
-    <PackageReference Include="automapper" Version="6.1.1" />
+    <PackageReference Include="AutoMapper" Version="6.1.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.0.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
+    <PackageReference Include="Microsoft.NETCore.Runtime.CoreCLR" Version="2.0.0" />
     <PackageReference Include="Nancy" Version="2.0.0-clinteastwood" />
     <PackageReference Include="Nancy.Bootstrappers.Autofac" Version="2.0.0-clinteastwood" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -83,7 +73,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <Reference Include="Autofac.Extensions.DependencyInjection">
+      <HintPath>..\lib\Autofac.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -126,7 +126,7 @@ namespace Neo4jManager.V3
 
             builder
                 .Append(" -NoProfile")
-                //.Append(" -NonInteractive")
+                .Append(" -NonInteractive")
                 .Append(" -NoLogo")
                 .Append(" -ExecutionPolicy Bypass")
                 .Append(" -Command ")
