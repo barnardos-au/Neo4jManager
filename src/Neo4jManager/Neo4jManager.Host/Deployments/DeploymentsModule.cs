@@ -58,8 +58,7 @@ namespace Neo4jManager.Host.Deployments
             {
                 await Task.Run(() => pool.DeleteAll());
                 await Task.Run(() => Helper.KillNeo4jServices());
-
-                return Response.AsFile(ModulePath);
+                return (Response)null;
             });
 
             // Delete single deployment

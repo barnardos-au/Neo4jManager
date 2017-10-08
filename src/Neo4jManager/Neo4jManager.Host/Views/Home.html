@@ -73,7 +73,7 @@
                         <tbody>
                             @Each.Deployments
                             <tr>
-                                <td>@Current.Id</td>
+                                <td><a href="/deployments/@Current.Id">@Current.Id</a></td>
                                 <td>@Current.Version.VersionNumber</td>
                                 <td><a href="@Current.Endpoints.HttpEndpoint">@Current.Endpoints.HttpEndpoint</a></td>
                                 <td><a href="@Current.Endpoints.HttpsEndpoint">@Current.Endpoints.HttpsEndpoint</a></td>
