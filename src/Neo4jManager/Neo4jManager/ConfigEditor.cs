@@ -39,8 +39,13 @@ namespace Neo4jManager
                 }
             }
 
-            if (updated)
-                File.WriteAllLines(configFile, newContent);
+            if (!updated)
+            {
+                var newLine = $"{key}={value}";
+                newContent.Add(newLine);
+            }
+
+            File.WriteAllLines(configFile, newContent);
         }
 
         public string GetValue(string key)
