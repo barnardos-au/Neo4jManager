@@ -29,7 +29,7 @@ namespace Neo4jManager.V2
                 process = GetProcess();
                 process.Start();
                 await this.WaitForReady(token);
-
+                Status = Status.Started;
                 return;
             }
 
@@ -45,12 +45,15 @@ namespace Neo4jManager.V2
             {
                 Stop();
             }, token);
+
+            Status = Status.Stopped;
         }
 
-        public Status Status { get; } = Status.Stopped;
+        public Status Status { get; private set; } = Status.Stopped;
 
         private void Stop()
         {
+            Status = Status.Stopping;
             if (process == null || process.HasExited) return;
 
             process.Kill();

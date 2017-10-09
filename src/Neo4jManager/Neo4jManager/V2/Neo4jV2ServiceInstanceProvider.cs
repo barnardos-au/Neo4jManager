@@ -98,12 +98,14 @@ namespace Neo4jManager.V2
         {
             await InstallService(token);
             await StartService(token);
+            Status = Status.Started;
         }
 
         public override async Task Stop(CancellationToken token)
         {
             await StopService(token);
             await UninstallService(token);
+            Status = Status.Stopped;
         }
 
         public override async Task Restart(CancellationToken token)
@@ -112,7 +114,7 @@ namespace Neo4jManager.V2
             await Start(token);
         }
 
-        public Status Status { get; } = Status.Stopped;
+        public Status Status { get; private set; } = Status.Stopped;
 
         public void Dispose()
         {
@@ -130,6 +132,8 @@ namespace Neo4jManager.V2
 
         private async Task StartService(CancellationToken token)
         {
+            Status = Status.Starting;
+
             await Task.Run(
                 () => Neo4jV2ServiceController.StartService(neo4jHomeFolder), token);
             await this.WaitForReady(token);
@@ -137,6 +141,8 @@ namespace Neo4jManager.V2
 
         private async Task StopService(CancellationToken token)
         {
+            Status = Status.Stopping;
+
             await Task.Run(
                 () => Neo4jV2ServiceController.StopService(neo4jHomeFolder), token);
         }
