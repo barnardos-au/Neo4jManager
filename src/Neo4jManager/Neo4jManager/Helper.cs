@@ -69,7 +69,8 @@ namespace Neo4jManager
         public static void KillNeo4jServices()
         {
             var neo4jServices = ServiceController.GetServices()
-                .Where(s => s.ServiceName.Contains("neo4j", StringComparison.OrdinalIgnoreCase));
+                .Where(s => s.ServiceName.Contains("neo4j", StringComparison.OrdinalIgnoreCase) 
+                && !s.ServiceName.Contains("neo4jmanager", StringComparison.OrdinalIgnoreCase));
 
             foreach (var service in neo4jServices)
             {
