@@ -73,9 +73,8 @@ namespace Neo4jManager.Host.Deployments
             {
                 string id = ctx.Id.ToString();
                 await Task.Run(() => pool.Delete(id));
-                return (Response) null;
+                return HttpStatusCode.NoContent;
             });
-
             
             // Start instance
             Post("/{Id}/start", async (ctx, ct) =>
