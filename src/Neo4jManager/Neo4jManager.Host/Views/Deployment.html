@@ -112,27 +112,46 @@
         };
 
         /*************************************************************************************/
+        // enable or disable buttons Start and Stop
+        /*************************************************************************************/
+        var toggleButtons = function (status) {
+            var startButton = $("#start-button");
+            var stopButton = $("#stop-button");
+
+            if (status === "Started") {
+                startButton.addClass("disabled");
+                stopButton.removeClass("disabled");
+            }
+
+            if (status === "Stopped") {
+                stopButton.addClass("disabled");
+                startButton.removeClass("disabled");
+            }
+        };
+
+        /*************************************************************************************/
         // Check Status continuously
         /*************************************************************************************/
-        var checkStatus = function () {
+        var checkStatus = function() {
 
             var url = location.href;
 
             $.ajax({
                 type: "GET",
                 url: url,
-                success: function (data) {
+                success: function(data) {
                     $("#deployment-status").text("(" + data.status + ")");
-
-                    setTimeout(checkStatus, 5000);
+                    toggleButtons(data.status);
+                    setTimeout(checkStatus, 3000);
                 },
                 error: function() {
                     return;
                 }
             });
-        }
+        };
 
         checkStatus();
+        
     });
 </script>
 </body>

@@ -72,3 +72,16 @@ label {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
 }
+
+.btn-success.disabled {
+    color: #fff;
+    background-color: #adebbc;
+    border-color: #adebbc;
+}
+
+.btn-danger.disabled {
+    color: #fff;
+    background-color: #f4bec3;
+    border-color: #f4bec3;
+}
+
