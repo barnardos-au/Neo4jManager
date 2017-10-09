@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Management;
 using System.Net;
 using System.ServiceProcess;
 using System.Text.RegularExpressions;
@@ -96,6 +97,26 @@ namespace Neo4jManager
                     {
                         process.Start();
                         process.WaitForExit(10000);
+                    }
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        public static void KillJavaProcesses()
+        {
+            var searcher = new ManagementObjectSearcher(@"SELECT * FROM Win32_Process WHERE CommandLine like '%java%Neo4jManager%'");
+            var objects = searcher.Get();
+            foreach (var o in objects)
+            {
+                try
+                {
+                    var id = Convert.ToInt32(o.GetPropertyValue("ProcessId"));
+                    using (var p = Process.GetProcessById(id))
+                    {
+                        p.Kill();
                     }
                 }
                 catch
