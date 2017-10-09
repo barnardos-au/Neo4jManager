@@ -65,7 +65,7 @@ namespace Neo4jManager.Host.Deployments
             {
                 await Task.Run(() => pool.DeleteAll());
                 await Task.Run(() => Helper.KillNeo4jServices());
-                await Task.Run(() => Helper.KillJavaProcesses());
+                await Task.Run(() => HostHelper.KillJavaProcesses());
                 return (Response)null;
             });
 
