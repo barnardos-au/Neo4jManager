@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Management;
 using System.Net;
 using System.ServiceProcess;
 using System.Text.RegularExpressions;
@@ -50,6 +51,11 @@ namespace Neo4jManager
             ZipFile.ExtractToDirectory(zipFile, extractFolder);
         }
 
+        public static void SafeDelete(string path)
+        {
+            SafeAction(() => Directory.Delete(path, true));
+        }
+
         public static void CopyDeployment(Neo4jVersion neo4jVersion, string neo4jBasePath, string targetDeploymentPath)
         {
             var extractFolder = Path.Combine(neo4jBasePath, Path.GetFileNameWithoutExtension(neo4jVersion.ZipFileName));
@@ -69,20 +75,18 @@ namespace Neo4jManager
         public static void KillNeo4jServices()
         {
             var neo4jServices = ServiceController.GetServices()
-                .Where(s => s.ServiceName.Contains("neo4j", StringComparison.OrdinalIgnoreCase));
+                .Where(s => s.ServiceName.Contains("neo4j", StringComparison.OrdinalIgnoreCase) 
+                && !s.ServiceName.Contains("neo4jmanager", StringComparison.OrdinalIgnoreCase));
 
             foreach (var service in neo4jServices)
             {
-                try
+                SafeAction(() =>
                 {
                     service.Stop();
                     service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
-                }
-                catch
-                {
-                }
+                });
 
-                try
+                SafeAction(() =>
                 {
                     using (var process = new Process
                     {
@@ -96,10 +100,24 @@ namespace Neo4jManager
                         process.Start();
                         process.WaitForExit(10000);
                     }
-                }
-                catch
+                });
+            }
+        }
+
+        public static void KillJavaProcesses()
+        {
+            var searcher = new ManagementObjectSearcher(@"SELECT * FROM Win32_Process WHERE CommandLine like '%java%neo4j%'");
+            var objects = searcher.Get();
+            foreach (var o in objects)
+            {
+                SafeAction(() =>
                 {
-                }
+                    var id = Convert.ToInt32(o.GetPropertyValue("ProcessId"));
+                    using (var p = Process.GetProcessById(id))
+                    {
+                        p.Kill();
+                    }
+                });
             }
         }
 
@@ -124,6 +142,17 @@ namespace Neo4jManager
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
             return source != null && toCheck != null && source.IndexOf(toCheck, comp) >= 0;
+        }
+
+        public static void SafeAction(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch
+            {
+            }
         }
     }
 }

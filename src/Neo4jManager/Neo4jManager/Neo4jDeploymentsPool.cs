@@ -28,6 +28,7 @@ namespace Neo4jManager
             if (string.IsNullOrEmpty(deploymentFolderName)) throw new ArgumentException("Error creating folder with given Id");
 
             var targetDeploymentPath = Path.Combine(neo4JManagerConfig.Neo4jBasePath, deploymentFolderName);
+            Helper.SafeDelete(targetDeploymentPath);
             Helper.CopyDeployment(neo4jVersion, neo4JManagerConfig.Neo4jBasePath, targetDeploymentPath);
 
             var endpoints = new Neo4jEndpoints
