@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 
 namespace Neo4jManager
 {
@@ -41,7 +42,8 @@ namespace Neo4jManager
                 endpoints.BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + Count}");
             }
 
-            var neo4jFolder = Directory.GetDirectories(targetDeploymentPath)[0];
+            var neo4jFolder = Directory.GetDirectories(targetDeploymentPath)
+                .First(f => f.Contains(neo4jVersion.Version, StringComparison.OrdinalIgnoreCase));
 
             var instance = neo4jInstanceFactory.Create(neo4jFolder, neo4jVersion, endpoints);
 
