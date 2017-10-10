@@ -25,7 +25,7 @@ namespace Neo4jManager.V3
                 process = GetProcess();
                 process.Start();
                 await this.WaitForReady(token);
-
+                Status = Status.Started;
                 return;
             }
 
@@ -33,11 +33,14 @@ namespace Neo4jManager.V3
 
             process.Start();
             await this.WaitForReady(token);
+            Status = Status.Started;
         }
 
         public override async Task Stop(CancellationToken token)
         {
             if (process == null || process.HasExited) return;
+
+            Status = Status.Stopping;
 
             await Task.Run(() =>
             {
@@ -45,12 +48,14 @@ namespace Neo4jManager.V3
             }, token);
         }
 
-        public Status Status { get; } = Status.Stopped;
+        public Status Status { get; private set; } = Status.Stopped;
 
         private void Stop()
         {
             process.Kill();
             process.WaitForExit(defaultWaitForKill);
+
+            Status = Status.Stopped;
         }
 
         public void Dispose()

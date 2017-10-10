@@ -33,7 +33,7 @@ namespace Neo4jManager.V3
             await Start(token);
         }
 
-        public Status Status { get; } = Status.Stopped;
+        public Status Status { get; private set; } = Status.Stopped;
 
         public void Dispose()
         {
@@ -55,6 +55,7 @@ namespace Neo4jManager.V3
 
         private async Task StartService(CancellationToken token)
         {
+            Status = Status.Starting;
             await Task.Run(() =>
             {
                 using (var process = GetProcess("start"))
@@ -65,14 +66,18 @@ namespace Neo4jManager.V3
             }, token);
 
             await this.WaitForReady(token);
+            Status = Status.Started;
         }
 
         private async Task StopService(CancellationToken token)
         {
+            Status = Status.Stopping;
             await Task.Run(() =>
             {
                 StopServiceProcess();
             }, token);
+            Status = Status.Stopped;
+
         }
 
         private void StopServiceProcess()
