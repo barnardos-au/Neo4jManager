@@ -33,9 +33,9 @@ namespace Neo4jManager
                 },
                 new Neo4jVersion
                 {
-                    Version = "3.3.0rc1",
-                    DownloadUrl = "https://neo4j.com/artifact.php?name=neo4j-community-3.3.0-rc1-windows.zip",
-                    ZipFileName = "neo4j-community-3.3.0-rc1-windows.zip",
+                    Version = "3.3.0",
+                    DownloadUrl = "https://neo4j.com/artifact.php?name=neo4j-community-3.3.0-windows.zip",
+                    ZipFileName = "neo4j-community-3.3.0-windows.zip",
                     Architecture = Neo4jArchitecture.V3
                 },
             };
