@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Nancy;
 using Nancy.ModelBinding;
-using Neo4jManager.Host.Versions;
 
 namespace Neo4jManager.Host.Deployments
 {
     public class DeploymentsModule : NancyModule
     {
-        public DeploymentsModule(INeo4jDeploymentsPool pool, IMapper mapper) : base("/deployments")
+        public DeploymentsModule(INeo4jDeploymentsPool pool, IMapper mapper, INeo4jVersionRepository versionRepository) : base("/deployments")
         {
             // Get all deployments
             Get("/", _ =>
@@ -41,7 +41,7 @@ namespace Neo4jManager.Host.Deployments
             {
                 var viewModel = new DeploymentRequest
                 {
-                    Versions = mapper.Map<IEnumerable<Version>>(Neo4jVersions.GetVersions()),
+                    Versions = versionRepository.GetVersions(),
                     Id = $"{pool.Count + 1}" 
                 };
 
@@ -54,9 +54,18 @@ namespace Neo4jManager.Host.Deployments
             Post("/create", async (ctx, ct) =>
             {
                 var deployment = this.Bind<DeploymentRequest>();
-                await Task.Run(() => pool.Create(Neo4jVersions.GetVersions().Single(v => v.Version == deployment.Version), deployment.Id));
+                var version = versionRepository.GetVersions().Single(v => v.VersionNumber == deployment.Version);
+                var neo4jVersion = new Neo4jVersion
+                {
+                    Architecture = (Neo4jArchitecture) Enum.Parse(typeof(Neo4jArchitecture), version.Architecture),
+                    DownloadUrl = version.DownloadUrl,
+                    Version = version.VersionNumber,
+                    ZipFileName = version.ZipFileName
+                };
 
-                var location = string.Format("{0}/{1}", ModulePath, deployment.Id);
+                await Task.Run(() => pool.Create(neo4jVersion, deployment.Id));
+
+                var location = $"{ModulePath}/{deployment.Id}";
                 return Response.AsRedirect(location);
             });
 

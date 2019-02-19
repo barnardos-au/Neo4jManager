@@ -14,11 +14,13 @@ namespace Neo4jManager
             var tokenSource = new CancellationTokenSource();
             var ct = tokenSource.Token;
 
-            var neo4jV2 = Neo4jVersions.GetVersions()
-                .Single(p => p.Version == "2.3.2");
-
-            var neo4jV3 = Neo4jVersions.GetVersions()
-                .Single(p => p.Version == "3.2.3");
+            var neo4jV3 = new Neo4jVersion
+            {
+                Architecture = Neo4jArchitecture.V3,
+                DownloadUrl = "https://neo4j.com/artifact.php?name=neo4j-community-3.5.3-windows.zip",
+                Version = "3.5.3",
+                ZipFileName = "neo4j-community-3.5.3-windows.zip"
+            };
 
             var config = new Neo4jManagerConfig
             {
@@ -46,18 +48,6 @@ namespace Neo4jManager
                 Task.WhenAll(task1, task2, task3, task4).Wait(ct);
 
                 pool.DeleteAll();
-
-                pool.Create(neo4jV2, "5");
-                pool.Create(neo4jV2, "6");
-                pool.Create(neo4jV2, "7");
-                pool.Create(neo4jV2, "8");
-
-                var task5 = Process(pool.Single(p => p.Key == "5"), ct);
-                var task6 = Process(pool.Single(p => p.Key == "6"), ct);
-                var task7 = Process(pool.Single(p => p.Key == "7"), ct);
-                var task8 = Process(pool.Single(p => p.Key == "8"), ct);
-
-                Task.WhenAll(task5, task6, task7, task8).Wait(ct);
             }
         }
 

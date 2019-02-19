@@ -1,20 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AutoMapper;
+﻿using System.Linq;
 using Nancy;
 
 namespace Neo4jManager.Host.Versions
 {
     public class VersionsModule : NancyModule
     {
-        public VersionsModule(IMapper mapper) : base("/versions")
+        public VersionsModule(INeo4jVersionRepository versionRepository) : base("/versions")
         {
             // Get all versions
             Get("/", _ =>
             {
                 var viewModel = new VersionsViewModel
                 {
-                    Versions = mapper.Map<IEnumerable<Version>>(Neo4jVersions.GetVersions())
+                    Versions = versionRepository.GetVersions()
                 };
 
                 return Negotiate
@@ -26,7 +24,7 @@ namespace Neo4jManager.Host.Versions
             Get("/{VersionNumber}", ctx =>
             {
                 string versionNumber = ctx.VersionNumber.ToString();
-                return mapper.Map<Version>(Neo4jVersions.GetVersions().Single(v => v.Version == versionNumber));
+                return versionRepository.GetVersions().Single(v => v.VersionNumber == versionNumber);
             });
         }
     }

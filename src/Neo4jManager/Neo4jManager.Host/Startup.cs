@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +13,13 @@ namespace Neo4jManager.Host
 {
     public class Startup
     {
+        private readonly IHostingEnvironment hostingEnvironment;
+
+        public Startup(IHostingEnvironment hostingEnvironment)
+        {
+            this.hostingEnvironment = hostingEnvironment;
+        }
+
         public IServiceCollection Services { get; private set; }
 
         public void ConfigureServices(IServiceCollection services)
@@ -39,6 +47,9 @@ namespace Neo4jManager.Host
                     .ForMember(dest => dest.Status, opts => opts.MapFrom(s => s.Value.Status.GetDescription()));
             });
             services.AddTransient(provider => mapperConfig.CreateMapper());
+
+            services.AddTransient<INeo4jVersionRepository>(provider => 
+                new Neo4jVersionRepository(Path.Combine(hostingEnvironment.ContentRootPath, "versions.json")));
 
             Services = services;
         }

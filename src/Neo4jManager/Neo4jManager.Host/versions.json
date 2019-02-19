@@ -1,0 +1,26 @@
+[
+  {
+    "VersionNumber": "3.2.6",
+    "DownloadUrl": "https://neo4j.com/artifact.php?name=neo4j-community-3.2.6-windows.zip",
+    "ZipFileName": "neo4j-community-3.2.6-windows.zip",
+    "Architecture": "V3"
+  },
+  {
+    "VersionNumber": "3.3.3",
+    "DownloadUrl": "https://neo4j.com/artifact.php?name=neo4j-community-3.3.3-windows.zip",
+    "ZipFileName": "neo4j-community-3.3.3-windows.zip",
+    "Architecture": "V3"
+  },
+  {
+    "VersionNumber": "3.3.5",
+    "DownloadUrl": "https://neo4j.com/artifact.php?name=neo4j-community-3.3.5-windows.zip",
+    "ZipFileName": "neo4j-community-3.3.5-windows.zip",
+    "Architecture": "V3"
+  },
+  {
+    "VersionNumber": "3.5.3",
+    "DownloadUrl": "https://neo4j.com/artifact.php?name=neo4j-community-3.5.3-windows.zip",
+    "ZipFileName": "neo4j-community-3.5.3-windows.zip",
+    "Architecture": "V3"
+  }
+]

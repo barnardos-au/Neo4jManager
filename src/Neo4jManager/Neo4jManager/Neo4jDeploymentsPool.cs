@@ -37,10 +37,7 @@ namespace Neo4jManager
                 HttpEndpoint = new Uri($"http://localhost:{neo4JManagerConfig.StartHttpPort + Count}"),
             };
 
-            if (neo4jVersion.Architecture != Neo4jArchitecture.V2)
-            {
-                endpoints.BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + Count}");
-            }
+            endpoints.BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + Count}");
 
             var neo4jFolder = Directory.GetDirectories(targetDeploymentPath)
                 .First(f => f.Contains(neo4jVersion.Version, StringComparison.OrdinalIgnoreCase));
