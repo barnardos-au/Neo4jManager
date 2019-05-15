@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Neo4jManager.ServiceModel.Versions;
 using ServiceStack;
-using Version = Neo4jManager.Host.Versions.Version;
 
-namespace Neo4jManager.Host
+namespace Neo4jManager.ServiceInterface
 {
     // ReSharper disable once InconsistentNaming
     public class Neo4jVersionRepository : INeo4jVersionRepository

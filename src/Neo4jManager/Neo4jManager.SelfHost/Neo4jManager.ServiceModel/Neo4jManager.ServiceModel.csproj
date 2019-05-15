@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Neo4jManager.ServiceModel</RootNamespace>
+    <AssemblyName>Neo4jManager.ServiceModel</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceStack.Interfaces" Version="5.*" />
+    <PackageReference Include="System.Management" Version="4.5.0" />
+  </ItemGroup>
+
+</Project>
