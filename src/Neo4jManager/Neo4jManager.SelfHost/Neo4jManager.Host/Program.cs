@@ -48,7 +48,7 @@ namespace Neo4jManager.Host
     public class AppHost : AppHostBase
     {
         public AppHost()
-            : base("Neo4jManager", typeof(MyServices).Assembly) { }
+            : base("Neo4jManager", typeof(DeploymentService).Assembly) { }
 
         public override void Configure(Container container)
         {

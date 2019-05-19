@@ -20,6 +20,7 @@ namespace Neo4jManager.ServiceInterface
             this.repository = repository;
         }
 
+        // Get by Id
         public DeploymentResponse Get(DeploymentRequest request)
         {
             var response = new DeploymentResponse
@@ -31,6 +32,8 @@ namespace Neo4jManager.ServiceInterface
 
             return response;
         }
+        
+        // Create
 
         public object Post(DeploymentRequest request)
         {
@@ -49,6 +52,7 @@ namespace Neo4jManager.ServiceInterface
             return this.Redirect($"/deployment/{request.Id}");
         }
 
+        // Delete
         public object Delete(DeploymentRequest request)
         {
             pool.Delete(request.Id);

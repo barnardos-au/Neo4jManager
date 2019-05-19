@@ -13,7 +13,7 @@ namespace Neo4jManager.Tests
 
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(IntegrationTest), typeof(MyServices).Assembly) { }
+            public AppHost() : base(nameof(IntegrationTest), typeof(DeploymentService).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -32,14 +32,14 @@ namespace Neo4jManager.Tests
 
         public IServiceClient CreateClient() => new JsonServiceClient(BaseUri);
 
-        [Test]
-        public void Can_call_Hello_Service()
-        {
-            var client = CreateClient();
-
-            var response = client.Get(new Hello { Name = "World" });
-
-            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
-        }
+//        [Test]
+//        public void Can_call_Hello_Service()
+//        {
+//            var client = CreateClient();
+//
+//            var response = client.Get(new Hello { Name = "World" });
+//
+//            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+//        }
     }
 }

@@ -14,6 +14,7 @@ namespace Neo4jManager.ServiceInterface
             this.pool = pool;
         }
 
+        // Get All
         public DeploymentsResponse Get(DeploymentsRequest request)
         {
             var response = new DeploymentsResponse
@@ -23,6 +24,8 @@ namespace Neo4jManager.ServiceInterface
 
             return response;
         }
+        
+        // Delete All
 
         public object Delete(DeploymentsRequest request)
         {

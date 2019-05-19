@@ -5,6 +5,8 @@
         Start,
         Stop,
         Restart,
-        Clear
+        Clear,
+        Backup,
+        Restore
     }
 }
