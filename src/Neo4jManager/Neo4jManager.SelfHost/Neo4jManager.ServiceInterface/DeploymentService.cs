@@ -47,7 +47,15 @@ namespace Neo4jManager.ServiceInterface
                 ZipFileName = version.ZipFileName
             };
 
-            pool.Create(neo4jVersion, request.Id);
+            var instance = pool.Create(neo4jVersion, request.Id);
+
+            if (request.Settings != null)
+            {
+                foreach (var setting in request.Settings)
+                {
+                    instance.Configure(setting.ConfigFile, setting.Key, setting.Value);
+                }
+            }
 
             return this.Redirect($"/deployment/{request.Id}");
         }

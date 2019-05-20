@@ -1,4 +1,5 @@
-﻿using ServiceStack;
+﻿using System.Collections.Generic;
+using ServiceStack;
 
 namespace Neo4jManager.ServiceModel.Deployments
 {
@@ -8,5 +9,8 @@ namespace Neo4jManager.ServiceModel.Deployments
     {
         public string Id { get; set; }
         public string Version { get; set; }
+        
+        public List<Setting> Settings { get; set; }
+        public List<string> PluginUrls { get; set; }
     }
 }
