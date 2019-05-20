@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Neo4jManager.ServiceModel.Deployments;
+using ServiceStack;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using Neo4jManager.ServiceModel.Deployments;
-using ServiceStack;
 
 namespace Neo4jManager.ServiceInterface
 {
@@ -23,16 +24,15 @@ namespace Neo4jManager.ServiceInterface
         // Get by Id
         public DeploymentResponse Get(DeploymentRequest request)
         {
-            var response = new DeploymentResponse
+            var deployment = pool.SingleOrDefault(p => p.Key == request.Id);
+            if (deployment.Equals(default(KeyValuePair<string, int>)) || string.IsNullOrEmpty(deployment.Key))
             {
-                Deployment = pool
-                    .SingleOrDefault(p => p.Key == request.Id)
-                    .ConvertTo<Deployment>()
-            };
+                return new DeploymentResponse();
+            }
 
-            return response;
+            return new DeploymentResponse { Deployment = deployment.Value.ConvertTo<Deployment>() };
         }
-        
+
         // Create
 
         public object Post(DeploymentRequest request)
