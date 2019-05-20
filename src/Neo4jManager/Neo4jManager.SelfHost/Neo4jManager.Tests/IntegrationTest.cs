@@ -1,8 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Funq;
 using Neo4jManager.ServiceInterface;
 using Neo4jManager.ServiceModel;
+using Neo4jManager.ServiceModel.Deployments;
 using NUnit.Framework;
 using ServiceStack;
+using ServiceStack.Configuration;
+using Version = Neo4jManager.ServiceModel.Versions.Version;
 
 namespace Neo4jManager.Tests
 {
@@ -13,10 +19,41 @@ namespace Neo4jManager.Tests
 
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(IntegrationTest), typeof(DeploymentService).Assembly) { }
+            public AppHost() : base(nameof(IntegrationTest), typeof(DeploymentService).Assembly)
+            {
+                var versionsJsv = new List<Version>
+                {
+                    new Version
+                    {
+                        VersionNumber = "3.5.3",
+                        DownloadUrl = "https://neo4j.com/artifact.php?name=neo4j-community-3.5.3-windows.zip",
+                        ZipFileName = "neo4j-community-3.5.3-windows.zip",
+                        Architecture = "V3"
+                    }
+                }.ToJsv();
+                
+                AppSettings = new MultiAppSettingsBuilder()
+                    .AddDictionarySettings(new Dictionary<string, string>
+                    {
+                        { AppSettingsKeys.Versions, versionsJsv }
+                    })
+                    .Build();
+            }
 
             public override void Configure(Container container)
             {
+                container.RegisterAutoWiredAs<FileCopy, IFileCopy>();
+                container.Register<INeo4jManagerConfig>(c => new Neo4jManagerConfig
+                {
+                    Neo4jBasePath = @"c:\Neo4jManager",
+                    StartBoltPort = 7687,
+                    StartHttpPort = 7401
+                }).ReusedWithin(ReuseScope.None);
+                container.RegisterAutoWiredAs<ZuluJavaResolver, IJavaResolver>().ReusedWithin(ReuseScope.None);
+                container.RegisterAutoWiredAs<Neo4jInstanceFactory, INeo4jInstanceFactory>().ReusedWithin(ReuseScope.None);
+                container.RegisterAutoWiredAs<Neo4jDeploymentsPool, INeo4jDeploymentsPool>().ReusedWithin(ReuseScope.Container);
+                
+                Plugins.Add(new CancellableRequestsFeature());
             }
         }
 
@@ -32,14 +69,30 @@ namespace Neo4jManager.Tests
 
         public IServiceClient CreateClient() => new JsonServiceClient(BaseUri);
 
-//        [Test]
-//        public void Can_call_Hello_Service()
-//        {
-//            var client = CreateClient();
-//
-//            var response = client.Get(new Hello { Name = "World" });
-//
-//            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
-//        }
+        [Test]
+        public void Can_call_Hello_Service()
+        {
+            var client = CreateClient();
+
+            try
+            {
+                client.Post(new DeploymentRequest
+                {
+                    Id = "1",
+                    Version = "3.5.3"
+                });
+                client.Post(new ControlRequest
+                {
+                    Id = "1",
+                    Operation = Operation.Start
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+        }
     }
 }

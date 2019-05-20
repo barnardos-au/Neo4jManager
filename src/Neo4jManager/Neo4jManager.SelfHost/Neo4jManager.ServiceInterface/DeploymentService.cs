@@ -1,9 +1,9 @@
 ﻿using Neo4jManager.ServiceModel.Deployments;
 using ServiceStack;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using ServiceStack.Configuration;
 
 namespace Neo4jManager.ServiceInterface
 {
@@ -11,33 +11,31 @@ namespace Neo4jManager.ServiceInterface
     public class DeploymentService : Service
     {
         private readonly INeo4jDeploymentsPool pool;
-        private readonly INeo4jVersionRepository repository;
+        private readonly IAppSettings appSettings;
 
         public DeploymentService(
             INeo4jDeploymentsPool pool,
-            INeo4jVersionRepository repository)
+            IAppSettings appSettings)
         {
             this.pool = pool;
-            this.repository = repository;
+            this.appSettings = appSettings;
         }
 
         // Get by Id
-        public DeploymentResponse Get(DeploymentRequest request)
+        public object Get(DeploymentRequest request)
         {
-            var deployment = pool.SingleOrDefault(p => p.Key == request.Id);
-            if (deployment.Equals(default(KeyValuePair<string, int>)) || string.IsNullOrEmpty(deployment.Key))
-            {
-                return new DeploymentResponse();
-            }
+            if (!pool.ContainsKey(request.Id))
+                return new HttpResult(HttpStatusCode.NotFound);
+            
+            var deployment = pool[request.Id];
 
-            return new DeploymentResponse { Deployment = deployment.Value.ConvertTo<Deployment>() };
+            return new DeploymentResponse { Deployment = deployment.ConvertTo<Deployment>() };
         }
 
         // Create
-
         public object Post(DeploymentRequest request)
         {
-            var version = repository.GetVersions()
+            var version = appSettings.Neo4jVersions()
                 .Single(v => v.VersionNumber == request.Version);
             var neo4jVersion = new Neo4jVersion
             {

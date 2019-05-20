@@ -29,7 +29,7 @@ namespace Neo4jManager
                 StartHttpPort = 7401
             };
 
-            var instanceFactory = new Neo4jInstanceFactory(new FileCopy());
+            var instanceFactory = new Neo4jInstanceFactory(new FileCopy(), new ZuluJavaResolver());
 
             using (var pool = new Neo4jDeploymentsPool(config, instanceFactory))
             {

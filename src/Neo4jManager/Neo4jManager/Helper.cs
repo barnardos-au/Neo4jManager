@@ -14,13 +14,6 @@ namespace Neo4jManager
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class Helper
     {
-        public static string FindJavaExe()
-        {
-            const string javaRoot = @"C:\Program Files\Java";
-            return Directory.GetFiles(javaRoot, "java.exe", SearchOption.AllDirectories)
-                .ToList().OrderByDescending(p => p).FirstOrDefault();
-        }
-
         public static void Download(Neo4jVersion neo4jVersion, string neo4jBasePath)
         {
             var zipFile = Path.Combine(neo4jBasePath, neo4jVersion.ZipFileName);

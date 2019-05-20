@@ -8,14 +8,18 @@ namespace Neo4jManager
     public class Neo4jInstanceFactory : INeo4jInstanceFactory
     {
         private readonly IFileCopy fileCopy;
-        private readonly string javaPath;
+        private readonly IJavaResolver javaResolver;
+        private string javaPath;
 
-        public Neo4jInstanceFactory(IFileCopy fileCopy)
+        public Neo4jInstanceFactory(
+            IFileCopy fileCopy,
+            IJavaResolver javaResolver)
         {
             this.fileCopy = fileCopy;
-
-            javaPath = Helper.FindJavaExe();
+            this.javaResolver = javaResolver;
         }
+
+        private string JavaPath => javaPath ?? (javaPath = javaResolver.GetJavaPath());
 
         public INeo4jInstance Create(string neo4jFolder, Neo4jVersion neo4jVersion, Neo4jEndpoints endpoints)
         {
@@ -24,7 +28,7 @@ namespace Neo4jManager
             switch (neo4jVersion.Architecture)
             {
                 case Neo4jArchitecture.V3:
-                    instance = new Neo4jV3JavaInstanceProvider(javaPath, neo4jFolder, fileCopy, neo4jVersion, endpoints);
+                    instance = new Neo4jV3JavaInstanceProvider(JavaPath, neo4jFolder, fileCopy, neo4jVersion, endpoints);
 
                     const string configFile = Neo4jV3ProcessBasedInstanceProvider.Neo4jConfigFile;
                     instance.Configure(configFile, "dbms.security.auth_enabled", "false");
