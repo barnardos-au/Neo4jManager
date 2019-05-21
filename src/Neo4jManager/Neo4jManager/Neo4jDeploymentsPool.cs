@@ -20,7 +20,7 @@ namespace Neo4jManager
             this.neo4jInstanceFactory = neo4jInstanceFactory;
         }
 
-        public INeo4jInstance Create(Neo4jVersion neo4jVersion, string id)
+        public INeo4jInstance Create(Neo4jVersion neo4jVersion, string id, string[] pluginsUrl = null)
         {
             Helper.Download(neo4jVersion, neo4JManagerConfig.Neo4jBasePath);
             Helper.Extract(neo4jVersion, neo4JManagerConfig.Neo4jBasePath);
@@ -42,11 +42,21 @@ namespace Neo4jManager
             var neo4jFolder = Directory.GetDirectories(targetDeploymentPath)
                 .First(f => f.Contains(neo4jVersion.Version, StringComparison.OrdinalIgnoreCase));
 
+            DownloadPlugins(pluginsUrl, neo4jFolder);
             var instance = neo4jInstanceFactory.Create(neo4jFolder, neo4jVersion, endpoints);
 
             Add(id, instance);
 
             return instance;
+        }
+
+        private void DownloadPlugins(string[] pluginsUrl, string neo4jInstanceFolder)
+        {
+            foreach (var pluginUrl in pluginsUrl)
+            {
+                Helper.DownloadFile(pluginUrl, $@"{neo4jInstanceFolder}\plugins");
+            }
+
         }
 
         public void Delete(string id)

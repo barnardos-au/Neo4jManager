@@ -69,6 +69,17 @@ namespace Neo4jManager
             SafeAction(() => Directory.Delete(path, true));
         }
 
+        public static void DownloadFile(string downloadFileUrl, string destinationFolder)
+        {
+            Console.WriteLine($"Downloading file from {downloadFileUrl}");
+            using (var webClient = new WebClient())
+            {
+                Uri uri = new Uri(downloadFileUrl);
+                var fileName = System.IO.Path.GetFileName(uri.LocalPath);
+                webClient.DownloadFile(downloadFileUrl, $@"{destinationFolder}\{fileName}");
+            }
+        }
+
         public static void CopyDeployment(Neo4jVersion neo4jVersion, string neo4jBasePath, string targetDeploymentPath)
         {
             var extractFolder = Path.Combine(neo4jBasePath, Path.GetFileNameWithoutExtension(neo4jVersion.ZipFileName));
