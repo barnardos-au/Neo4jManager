@@ -9,7 +9,7 @@ namespace Neo4jManager.Client
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jManagerClient : INeo4jManagerClient
     {
-        private readonly IJsonServiceClient client;
+        private readonly IServiceClient client;
         
         public Neo4jManagerClient(string baseUrl)
         {
@@ -214,16 +214,34 @@ namespace Neo4jManager.Client
             });
         }
 
-//        public void Configure(string id, string configFile, string key, string value)
-//        {
-//            $"{baseUrl}/deployments/{id}/config"
-//                .PostJsonToUrl(new Config { ConfigFile = configFile, Key = key, Value = value });
-//        }
-//
-//        public async Task ConfigureAsync(string id, string configFile, string key, string value)
-//        {
-//            await $"{baseUrl}/deployments/{id}/config"
-//                .PostJsonToUrlAsync(new Config { ConfigFile = configFile, Key = key, Value = value });
-//        }
+        public void Configure(string id, string configFile, string key, string value)
+        {
+            client.Post(new ControlRequest
+            {
+                Id = id,
+                Setting = new Setting
+                {
+                    ConfigFile = configFile,
+                    Key = key,
+                    Value = value
+                },
+                Operation = Operation.Configure
+            });
+        }
+
+        public async Task ConfigureAsync(string id, string configFile, string key, string value)
+        {
+            await client.PostAsync(new ControlRequest
+            {
+                Id = id,
+                Setting = new Setting
+                {
+                    ConfigFile = configFile,
+                    Key = key,
+                    Value = value
+                },
+                Operation = Operation.Configure
+            });
+        }
     }
 }
