@@ -14,5 +14,8 @@ namespace Neo4jManager.ServiceModel
 
         // Restore
         public string SourcePath { get; set; }
+        
+        // Configure
+        public Setting Setting { get; set; }
     }
 }

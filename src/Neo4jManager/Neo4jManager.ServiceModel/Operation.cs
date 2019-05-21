@@ -7,6 +7,7 @@
         Restart,
         Clear,
         Backup,
-        Restore
+        Restore,
+        Configure
     }
 }

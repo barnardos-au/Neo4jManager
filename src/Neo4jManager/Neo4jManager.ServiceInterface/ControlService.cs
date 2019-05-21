@@ -53,6 +53,13 @@ namespace Neo4jManager.ServiceInterface
                             request.SourcePath);
                         break;
 
+                    case Operation.Configure:
+                        pool[request.Id].Configure(
+                            request.Setting.ConfigFile,
+                            request.Setting.Key,
+                            request.Setting.Value);
+                        break;
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
