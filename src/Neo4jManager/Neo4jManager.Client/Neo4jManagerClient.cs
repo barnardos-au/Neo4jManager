@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Neo4jManager.ServiceModel;
 using ServiceStack;
 
 namespace Neo4jManager.Client
@@ -8,187 +9,217 @@ namespace Neo4jManager.Client
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jManagerClient : INeo4jManagerClient
     {
-        private readonly string baseUrl;
-
-        public Neo4jManagerClient(int port)
+        private readonly IJsonServiceClient client;
+        
+        public Neo4jManagerClient(string baseUrl)
         {
-            baseUrl = $"http://localhost:{port}";
+            client = new JsonServiceClient(baseUrl);
         }
 
         public IEnumerable<Version> GetVersions()
         {
-            return $"{baseUrl}/versions"
-                .GetJsonFromUrl()
-                .FromJson<VersionList>()
-                .Versions;
+            return client.Get(new VersionsRequest()).Versions;
         }
 
         public async Task<IEnumerable<Version>> GetVersionsAsync()
         {
-            var response = await $"{baseUrl}/versions"
-                .GetStringFromUrlAsync();
-
-            return response
-                .FromJson<VersionList>()
-                .Versions;
+            return (await client.GetAsync(new VersionsRequest())).Versions;
         }
 
         public IEnumerable<Deployment> GetDeployments()
         {
-            return $"{baseUrl}/deployments"
-                .GetJsonFromUrl()
-                .FromJson<DeploymentList>()
-                .Deployments;
+            return client.Get(new DeploymentsRequest()).Deployments;
         }
 
         public async Task<IEnumerable<Deployment>> GetDeploymentsAsync()
         {
-            var response = await $"{baseUrl}/deployments"
-                .GetStringFromUrlAsync();
-
-            return response
-                .FromJson<DeploymentList>()
-                .Deployments;
+            return (await client.GetAsync(new DeploymentsRequest())).Deployments;
         }
 
         public Deployment GetDeployment(string id)
         {
-            return $"{baseUrl}/deployments/{id}"
-                .GetJsonFromUrl()
-                .FromJson<Deployment>();
+            return client.Get(new DeploymentRequest
+            {
+                Id = id
+            }).Deployment;
         }
 
         public async Task<Deployment> GetDeploymentAsync(string id)
         {
-            var response = await $"{baseUrl}/deployments/{id}"
-                .GetStringFromUrlAsync();
-
-            return response
-                .FromJson<Deployment>();
+            return (await client.GetAsync(new DeploymentRequest
+            {
+                Id = id
+            })).Deployment;
         }
 
         public void DeleteAll()
         {
-            $"{baseUrl}/deployments/all"
-                .DeleteFromUrl();
+            client.Delete(new DeploymentsRequest());
         }
 
         public async Task DeleteAllAsync()
         {
-            await $"{baseUrl}/deployments/all".DeleteFromUrlAsync();
+            await client.DeleteAsync(new DeploymentsRequest());
         }
 
         public Deployment Create(string id, string versionNumber)
         {
-            return $"{baseUrl}/deployments/create"
-                .PostJsonToUrl(new CreateDeployment { Id = id, Version = versionNumber })
-                .FromJson<Deployment>();
+            return client.Post(new DeploymentRequest
+            {
+                Id = id,
+                Version = versionNumber
+            }).Deployment;
         }
 
         public async Task<Deployment> CreateAsync(string id, string versionNumber)
         {
-            var response = await $"{baseUrl}/deployments/create"
-                .PostJsonToUrlAsync(new CreateDeployment { Id = id, Version = versionNumber });
-
-            return response
-                .FromJson<Deployment>();
+            return (await client.PostAsync(new DeploymentRequest
+            {
+                Id = id,
+                Version = versionNumber
+            })).Deployment;
         }
 
         public void Delete(string id)
         {
-            $"{baseUrl}/deployments/{id}"
-                .DeleteFromUrl();
+            client.Delete(new DeploymentRequest
+            {
+                Id = id,
+            });
         }
 
         public async Task DeleteAsync(string id)
         {
-            await $"{baseUrl}/deployments/{id}"
-                .DeleteFromUrlAsync();
+            await client.DeleteAsync(new DeploymentRequest
+            {
+                Id = id,
+            });
         }
 
         public void Start(string id)
         {
-            $"{baseUrl}/deployments/{id}/start"
-                .PostToUrl(null, requestFilter: req => req.ContentLength = 0);
+            client.Post(new ControlRequest
+            {
+                Id = id,
+                Operation = Operation.Start
+            });
         }
 
         public async Task StartAsync(string id)
         {
-            await $"{baseUrl}/deployments/{id}/start"
-                .PostJsonToUrlAsync(null, req => req.ContentLength = 0);
+            await client.PostAsync(new ControlRequest
+            {
+                Id = id,
+                Operation = Operation.Start
+            });
         }
 
         public void Stop(string id)
         {
-            $"{baseUrl}/deployments/{id}/stop"
-                .PostToUrl(null, requestFilter: req => req.ContentLength = 0);
+            client.Post(new ControlRequest
+            {
+                Id = id,
+                Operation = Operation.Stop
+            });
         }
 
         public async Task StopAsync(string id)
         {
-            await $"{baseUrl}/deployments/{id}/stop"
-                .PostJsonToUrlAsync(null, req => req.ContentLength = 0);
+            await client.PostAsync(new ControlRequest
+            {
+                Id = id,
+                Operation = Operation.Stop
+            });
         }
 
         public void Restart(string id)
         {
-            $"{baseUrl}/deployments/{id}/restart"
-                .PostToUrl(null, requestFilter: req => req.ContentLength = 0);
+            client.Post(new ControlRequest
+            {
+                Id = id,
+                Operation = Operation.Restart
+            });
         }
 
         public async Task RestartAsync(string id)
         {
-            await $"{baseUrl}/deployments/{id}/restart"
-                .PostJsonToUrlAsync(null, req => req.ContentLength = 0);
+            await client.PostAsync(new ControlRequest
+            {
+                Id = id,
+                Operation = Operation.Restart
+            });
         }
 
         public void Clear(string id)
         {
-            $"{baseUrl}/deployments/{id}/clear"
-                .PostToUrl(null, requestFilter: req => req.ContentLength = 0);
+            client.Post(new ControlRequest
+            {
+                Id = id,
+                Operation = Operation.Clear
+            });
         }
 
         public async Task ClearAsync(string id)
         {
-            await $"{baseUrl}/deployments/{id}/clear"
-                .PostJsonToUrlAsync(null, req => req.ContentLength = 0);
+            await client.PostAsync(new ControlRequest
+            {
+                Id = id,
+                Operation = Operation.Clear
+            });
         }
 
         public void Backup(string id, string destinationPath, bool stopInstanceBeforeBackup = true)
         {
-            $"{baseUrl}/deployments/{id}/backup"
-                .PostJsonToUrl(new Backup { DestinationPath = destinationPath, StopInstanceBeforeBackup = stopInstanceBeforeBackup });
+            client.Post(new ControlRequest
+            {
+                Id = id,
+                DestinationPath = destinationPath,
+                StopInstanceBeforeBackup = stopInstanceBeforeBackup,
+                Operation = Operation.Backup
+            });
         }
 
         public async Task BackupAsync(string id, string destinationPath, bool stopInstanceBeforeBackup = true)
         {
-            await $"{baseUrl}/deployments/{id}/backup"
-                .PostJsonToUrlAsync(new Backup { DestinationPath = destinationPath, StopInstanceBeforeBackup = stopInstanceBeforeBackup });
+            await client.PostAsync(new ControlRequest
+            {
+                Id = id,
+                DestinationPath = destinationPath,
+                StopInstanceBeforeBackup = stopInstanceBeforeBackup,
+                Operation = Operation.Backup
+            });
         }
 
         public void Restore(string id, string sourcePath)
         {
-            $"{baseUrl}/deployments/{id}/restore"
-                .PostJsonToUrl(new Restore { SourcePath = sourcePath });
+            client.Post(new ControlRequest
+            {
+                Id = id,
+                SourcePath = sourcePath,
+                Operation = Operation.Restore
+            });
         }
 
         public async Task RestoreAsync(string id, string sourcePath)
         {
-            await $"{baseUrl}/deployments/{id}/restore"
-                .PostJsonToUrlAsync(new Restore { SourcePath = sourcePath });
+            await client.PostAsync(new ControlRequest
+            {
+                Id = id,
+                SourcePath = sourcePath,
+                Operation = Operation.Restore
+            });
         }
 
-        public void Configure(string id, string configFile, string key, string value)
-        {
-            $"{baseUrl}/deployments/{id}/config"
-                .PostJsonToUrl(new Config { ConfigFile = configFile, Key = key, Value = value });
-        }
-
-        public async Task ConfigureAsync(string id, string configFile, string key, string value)
-        {
-            await $"{baseUrl}/deployments/{id}/config"
-                .PostJsonToUrlAsync(new Config { ConfigFile = configFile, Key = key, Value = value });
-        }
-
+//        public void Configure(string id, string configFile, string key, string value)
+//        {
+//            $"{baseUrl}/deployments/{id}/config"
+//                .PostJsonToUrl(new Config { ConfigFile = configFile, Key = key, Value = value });
+//        }
+//
+//        public async Task ConfigureAsync(string id, string configFile, string key, string value)
+//        {
+//            await $"{baseUrl}/deployments/{id}/config"
+//                .PostJsonToUrlAsync(new Config { ConfigFile = configFile, Key = key, Value = value });
+//        }
     }
 }

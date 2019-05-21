@@ -1,11 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ServiceStack.Client" Version="5.5.0" />
     <PackageReference Include="servicestack.text.core" Version="1.0.44" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Neo4jManager.ServiceModel\Neo4jManager.ServiceModel.csproj" />
   </ItemGroup>
 
 </Project>
