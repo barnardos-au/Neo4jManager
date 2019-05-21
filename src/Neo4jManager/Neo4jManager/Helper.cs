@@ -8,6 +8,8 @@ using System.Linq;
 using System.Net;
 using System.ServiceProcess;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using ServiceStack;
 
 namespace Neo4jManager
 {
@@ -28,6 +30,25 @@ namespace Neo4jManager
             using (var webClient = new WebClient())
             {
                 webClient.DownloadFile(neo4jVersion.DownloadUrl, zipFile);
+            }
+        }
+
+        public static async Task DownloadAsync(Neo4jVersion neo4jVersion, string neo4jBasePath)
+        {
+            var zipFile = Path.Combine(neo4jBasePath, neo4jVersion.ZipFileName);
+
+            if (File.Exists(zipFile)) return;
+
+            Console.WriteLine($"Downloading Neo4j from {neo4jVersion.DownloadUrl}");
+
+            var fileInfo = new FileInfo(zipFile);
+            Directory.CreateDirectory(fileInfo.DirectoryName);
+
+            var fileBytes = await neo4jVersion.DownloadUrl.GetBytesFromUrlAsync();
+            using (var SourceStream = File.Open(zipFile, FileMode.OpenOrCreate))
+            {
+                SourceStream.Seek(0, SeekOrigin.End);
+                await SourceStream.WriteAsync(fileBytes, 0, fileBytes.Length);
             }
         }
 
