@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <PackageReference Include="ServiceStack.Client" Version="5.5.0" />
-    <PackageReference Include="servicestack.text.core" Version="1.0.44" />
   </ItemGroup>
 
   <ItemGroup>

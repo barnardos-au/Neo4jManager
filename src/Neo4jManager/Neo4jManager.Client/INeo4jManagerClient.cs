@@ -16,11 +16,12 @@ namespace Neo4jManager.Client
         Task<Deployment> GetDeploymentAsync(string id);
         void DeleteAll();
         Task DeleteAllAsync();
-        Deployment Create(string id, string versionNumber);
-        Task<Deployment> CreateAsync(string id, string versionNumber);
+        Deployment Create(string id, string versionNumber, List<Setting> settings = null,
+            List<string> pluginUrls = null);
+        Task<Deployment> CreateAsync(string id, string versionNumber, List<Setting> settings = null,
+            List<string> pluginUrls = null);
         void Delete(string id);
         Task DeleteAsync(string id);
-
         void Start(string id);
         Task StartAsync(string id);
         void Stop(string id);
@@ -33,7 +34,5 @@ namespace Neo4jManager.Client
         Task BackupAsync(string id, string destinationPath, bool stopInstanceBeforeBackup = true);
         void Restore(string id, string sourcePath);
         Task RestoreAsync(string id, string sourcePath);
-//        void Configure(string id, string configFile, string key, string value);
-//        Task ConfigureAsync(string id, string configFile, string key, string value);
     }
 }

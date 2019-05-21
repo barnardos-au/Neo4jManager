@@ -57,7 +57,7 @@ namespace Neo4jManager.Host
             container.Register<INeo4jManagerConfig>(c => new Neo4jManagerConfig
             {
                 Neo4jBasePath = @"c:\Neo4jManager",
-                StartBoltPort = 7687,
+                StartBoltPort = 7691,
                 StartHttpPort = 7401
             }).ReusedWithin(ReuseScope.None);
             container.RegisterAutoWiredAs<ZuluJavaResolver, IJavaResolver>().ReusedWithin(ReuseScope.None);

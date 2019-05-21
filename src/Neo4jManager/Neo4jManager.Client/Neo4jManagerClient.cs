@@ -62,21 +62,25 @@ namespace Neo4jManager.Client
             await client.DeleteAsync(new DeploymentsRequest());
         }
 
-        public Deployment Create(string id, string versionNumber)
+        public Deployment Create(string id, string versionNumber, List<Setting> settings = null, List<string> pluginUrls = null)
         {
             return client.Post(new DeploymentRequest
             {
                 Id = id,
-                Version = versionNumber
+                Version = versionNumber,
+                Settings = settings,
+                PluginUrls = pluginUrls
             }).Deployment;
         }
 
-        public async Task<Deployment> CreateAsync(string id, string versionNumber)
+        public async Task<Deployment> CreateAsync(string id, string versionNumber, List<Setting> settings = null, List<string> pluginUrls = null)
         {
             return (await client.PostAsync(new DeploymentRequest
             {
                 Id = id,
-                Version = versionNumber
+                Version = versionNumber,
+                Settings = settings,
+                PluginUrls = pluginUrls
             })).Deployment;
         }
 

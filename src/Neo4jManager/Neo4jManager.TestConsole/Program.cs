@@ -25,7 +25,7 @@ namespace Neo4jManager
             var config = new Neo4jManagerConfig
             {
                 Neo4jBasePath = @"c:\Neo4jManager",
-                StartBoltPort = 7687,
+                StartBoltPort = 7691,
                 StartHttpPort = 7401
             };
 

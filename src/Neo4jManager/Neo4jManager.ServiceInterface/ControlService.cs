@@ -16,8 +16,10 @@ namespace Neo4jManager.ServiceInterface
             this.pool = pool;
         }
 
-        public async Task<IHttpResult> Post(ControlRequest request)
+        public async Task<DeploymentResponse> Post(ControlRequest request)
         {
+            var instance = pool[request.Id];
+            
             using (var cancellableRequest = Request.CreateCancellableRequest())
             {
                 switch (request.Operation)
@@ -56,7 +58,10 @@ namespace Neo4jManager.ServiceInterface
                 }
             }
 
-            return new HttpResult(HttpStatusCode.NoContent);
+            return new DeploymentResponse
+            {
+                Deployment = instance.ConvertTo<Deployment>()
+            };
         }
     }
 }

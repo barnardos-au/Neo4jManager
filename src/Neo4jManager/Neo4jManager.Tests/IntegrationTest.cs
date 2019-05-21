@@ -44,7 +44,7 @@ namespace Neo4jManager.Tests
                 container.Register<INeo4jManagerConfig>(c => new Neo4jManagerConfig
                 {
                     Neo4jBasePath = @"c:\Neo4jManager",
-                    StartBoltPort = 7687,
+                    StartBoltPort = 7691,
                     StartHttpPort = 7401
                 }).ReusedWithin(ReuseScope.None);
                 container.RegisterAutoWiredAs<ZuluJavaResolver, IJavaResolver>().ReusedWithin(ReuseScope.None);
@@ -68,18 +68,18 @@ namespace Neo4jManager.Tests
         public IServiceClient CreateClient() => new JsonServiceClient(BaseUri);
 
         [Test]
-        public void Can_call_Hello_Service()
+        public void Can_Install_And_Start_Neo4j()
         {
             var client = CreateClient();
 
             try
             {
-                client.Post(new DeploymentRequest
+                var deploymentResponse = client.Post(new DeploymentRequest
                 {
                     Id = "1",
                     Version = "3.5.3"
                 });
-                client.Post(new ControlRequest
+                var controlResponse = client.Post(new ControlRequest
                 {
                     Id = "1",
                     Operation = Operation.Start

@@ -55,15 +55,20 @@ namespace Neo4jManager.ServiceInterface
                 }
             }
 
-            return this.Redirect($"/deployment/{request.Id}");
+            return new DeploymentResponse { Deployment = instance.ConvertTo<Deployment>() };
         }
 
         // Delete
-        public object Delete(DeploymentRequest request)
+        public DeploymentResponse Delete(DeploymentRequest request)
         {
+            var instance = pool[request.Id];
+            
             pool.Delete(request.Id);
 
-            return new HttpResult(HttpStatusCode.NoContent);
+            return new DeploymentResponse
+            {
+                Deployment = instance.ConvertTo<Deployment>()
+            };
         }
     }
 }

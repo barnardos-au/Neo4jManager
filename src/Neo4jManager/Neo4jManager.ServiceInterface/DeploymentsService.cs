@@ -26,7 +26,6 @@ namespace Neo4jManager.ServiceInterface
         }
         
         // Delete All
-
         public object Delete(DeploymentsRequest request)
         {
             pool.DeleteAll();
