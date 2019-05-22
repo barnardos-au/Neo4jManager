@@ -37,7 +37,7 @@ namespace Neo4jManager.Host
     {
         public AppHost(IHostingEnvironment hostingEnvironment) : base("Neo4jManager", typeof(DeploymentService).Assembly)
         {
-            var versions = File.ReadAllText(Path.Combine(hostingEnvironment.ContentRootPath, "versions.json"))
+            var versions = File.ReadAllText(Path.Combine(System.AppContext.BaseDirectory, "versions.json"))
                 .FromJson<IEnumerable<Version>>()
                 .ToJsv();
 
