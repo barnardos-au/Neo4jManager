@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
 using ServiceStack;
@@ -16,10 +15,10 @@ namespace Neo4jManager.ServiceInterface
             this.pool = pool;
         }
 
-        public async Task<object> Post(ControlRequest request)
+        public async Task<DeploymentResponse> Post(ControlRequest request)
         {
             if (!pool.ContainsKey(request.Id))
-                return new HttpResult(HttpStatusCode.NotFound);
+                throw HttpError.NotFound($"Deployment {request.Id} not found");
 
             var keyedInstance = pool.Single(p => p.Key == request.Id);
             

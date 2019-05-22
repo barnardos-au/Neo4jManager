@@ -64,7 +64,7 @@ namespace Neo4jManager.Host
             container.RegisterAutoWiredAs<Neo4jDeploymentsPool, INeo4jDeploymentsPool>().ReusedWithin(ReuseScope.Container);
 
             ConfigurePlugins();
-            ConfigureMappers();
+            Neo4jManager.ServiceInterface.Helper.ConfigureMappers();
         }
 
         private void ConfigurePlugins()
@@ -72,18 +72,6 @@ namespace Neo4jManager.Host
             Plugins.Add(new CancellableRequestsFeature());
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature());
-        }
-
-        private void ConfigureMappers()
-        {
-            AutoMapping.RegisterConverter<KeyValuePair<string, INeo4jInstance>, Deployment>(kvp => new Deployment
-            {
-                Id = kvp.Key, 
-                DataPath = kvp.Value.DataPath,
-                Endpoints = kvp.Value.Endpoints.ConvertTo<Endpoints>(),
-                Version = kvp.Value.Version.ConvertTo<Version>(),
-                Status = kvp.Value.Status.ToString()
-            });
         }
     }
 }

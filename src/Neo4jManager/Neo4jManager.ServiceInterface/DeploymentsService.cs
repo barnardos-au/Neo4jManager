@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Net;
 using Neo4jManager.ServiceModel;
 using ServiceStack;
 
@@ -26,12 +25,12 @@ namespace Neo4jManager.ServiceInterface
         }
         
         // Delete All
-        public object Delete(DeploymentsRequest request)
+        public DeploymentsResponse Delete(DeploymentsRequest request)
         {
             pool.DeleteAll();
-            HostHelper.KillJavaProcesses();
+            Helper.KillJavaProcesses();
 
-            return new HttpResult(HttpStatusCode.NoContent);
+            return new DeploymentsResponse();
         }
     }
 }

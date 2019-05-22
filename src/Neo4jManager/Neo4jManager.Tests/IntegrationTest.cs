@@ -15,9 +15,9 @@ namespace Neo4jManager.Tests
         const string BaseUri = "http://localhost:2000/";
         private readonly ServiceStackHost appHost;
 
-        class AppHost : AppSelfHostBase
+        class TestAppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(IntegrationTest), typeof(DeploymentService).Assembly)
+            public TestAppHost() : base(nameof(IntegrationTest), typeof(DeploymentService).Assembly)
             {
                 var versionsJsv = new List<Version>
                 {
@@ -57,9 +57,11 @@ namespace Neo4jManager.Tests
 
         public IntegrationTest()
         {
-            appHost = new AppHost()
+            appHost = new TestAppHost()
                 .Init()
                 .Start(BaseUri);
+            
+            Neo4jManager.ServiceInterface.Helper.ConfigureMappers();
         }
 
         [OneTimeTearDown]
@@ -72,25 +74,60 @@ namespace Neo4jManager.Tests
         {
             var client = CreateClient();
 
-            try
+            var deploymentResponse = client.Post(new DeploymentRequest
             {
-                var deploymentResponse = client.Post(new DeploymentRequest
-                {
-                    Id = "1",
-                    Version = "3.5.3"
-                });
-                var controlResponse = client.Post(new ControlRequest
-                {
-                    Id = "1",
-                    Operation = Operation.Start
-                });
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+                Id = "1",
+                Version = "3.5.3"
+            });
 
+            Assert.IsNotNull(deploymentResponse.Deployment);
+            
+            var deployment = deploymentResponse.Deployment;
+            Assert.IsNotNull(deployment.DataPath);
+            Assert.IsTrue(deployment.DataPath.StartsWith(@"c:\neo4jmanager", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual("1", deployment.Id);
+            Assert.IsNotNull(deployment.Version);
+            Assert.AreEqual("V3", deployment.Version.Architecture);
+            Assert.IsNotNull(deployment.Version.DownloadUrl);
+            Assert.AreEqual("3.5.3", deployment.Version.VersionNumber);
+            Assert.IsNotNull(deployment.Version.ZipFileName);
+            Assert.IsNotNull(deployment.Endpoints);
+            Assert.IsNotNull(deployment.Endpoints.BoltEndpoint);
+            Assert.IsNotNull(deployment.Endpoints.HttpEndpoint);
+            Assert.IsNull(deployment.Endpoints.HttpsEndpoint);
+            Assert.AreEqual("Stopped", deployment.Status);
+
+            var controlResponse = client.Post(new ControlRequest
+            {
+                Id = "1",
+                Operation = Operation.Start
+            });
+
+            Assert.IsNotNull(controlResponse.Deployment);
+            deployment = controlResponse.Deployment;
+            Assert.IsNotNull(deployment.DataPath);
+            Assert.IsTrue(deployment.DataPath.StartsWith(@"c:\neo4jmanager", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual("1", deployment.Id);
+            Assert.IsNotNull(deployment.Version);
+            Assert.AreEqual("V3", deployment.Version.Architecture);
+            Assert.IsNotNull(deployment.Version.DownloadUrl);
+            Assert.AreEqual("3.5.3", deployment.Version.VersionNumber);
+            Assert.IsNotNull(deployment.Version.ZipFileName);
+            Assert.IsNotNull(deployment.Endpoints);
+            Assert.IsNotNull(deployment.Endpoints.BoltEndpoint);
+            Assert.IsNotNull(deployment.Endpoints.HttpEndpoint);
+            Assert.IsNull(deployment.Endpoints.HttpsEndpoint);
+            Assert.AreEqual("Started", deployment.Status);
+
+            controlResponse = client.Post(new ControlRequest
+            {
+                Id = "1",
+                Operation = Operation.Stop
+            });
+
+            Assert.IsNotNull(controlResponse.Deployment);
+            deployment = controlResponse.Deployment;
+            Assert.AreEqual("Stopped", deployment.Status);
         }
     }
 }

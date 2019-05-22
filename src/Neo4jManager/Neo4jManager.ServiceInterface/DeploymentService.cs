@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using Neo4jManager.ServiceModel;
 using ServiceStack.Configuration;
 
@@ -23,10 +22,10 @@ namespace Neo4jManager.ServiceInterface
         }
 
         // Get by Id
-        public object Get(DeploymentRequest request)
+        public DeploymentResponse Get(DeploymentRequest request)
         {
             if (!pool.ContainsKey(request.Id))
-                return new HttpResult(HttpStatusCode.NotFound);
+                throw HttpError.NotFound($"Deployment {request.Id} not found");
             
             var keyedInstance = pool.SingleOrDefault(p => p.Key == request.Id);
 
@@ -34,7 +33,7 @@ namespace Neo4jManager.ServiceInterface
         }
 
         // Create
-        public object Post(DeploymentRequest request)
+        public DeploymentResponse Post(DeploymentRequest request)
         {
             var version = appSettings.Neo4jVersions()
                 .Single(v => v.VersionNumber == request.Version);
@@ -68,10 +67,10 @@ namespace Neo4jManager.ServiceInterface
         }
 
         // Delete
-        public object Delete(DeploymentRequest request)
+        public DeploymentResponse Delete(DeploymentRequest request)
         {
             if (!pool.ContainsKey(request.Id))
-                return new HttpResult(HttpStatusCode.NotFound);
+                throw HttpError.NotFound($"Deployment {request.Id} not found");
 
             var keyedInstance = pool.Single(p => p.Key == request.Id);
             
