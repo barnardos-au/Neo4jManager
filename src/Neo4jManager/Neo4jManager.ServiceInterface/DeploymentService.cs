@@ -1,5 +1,6 @@
 ﻿using ServiceStack;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Neo4jManager.ServiceModel;
@@ -27,9 +28,9 @@ namespace Neo4jManager.ServiceInterface
             if (!pool.ContainsKey(request.Id))
                 return new HttpResult(HttpStatusCode.NotFound);
             
-            var deployment = pool[request.Id];
+            var keyedInstance = pool.SingleOrDefault(p => p.Key == request.Id);
 
-            return new DeploymentResponse { Deployment = deployment.ConvertTo<Deployment>() };
+            return new DeploymentResponse { Deployment = keyedInstance.ConvertTo<Deployment>() };
         }
 
         // Create
@@ -55,19 +56,25 @@ namespace Neo4jManager.ServiceInterface
                 }
             }
 
-            return new DeploymentResponse { Deployment = instance.ConvertTo<Deployment>() };
+            return new DeploymentResponse
+            {
+                Deployment = new KeyValuePair<string, INeo4jInstance>(request.Id, instance).ConvertTo<Deployment>()
+            };
         }
 
         // Delete
-        public DeploymentResponse Delete(DeploymentRequest request)
+        public object Delete(DeploymentRequest request)
         {
-            var instance = pool[request.Id];
+            if (!pool.ContainsKey(request.Id))
+                return new HttpResult(HttpStatusCode.NotFound);
+
+            var keyedInstance = pool.Single(p => p.Key == request.Id);
             
             pool.Delete(request.Id);
 
             return new DeploymentResponse
             {
-                Deployment = instance.ConvertTo<Deployment>()
+                Deployment = keyedInstance.ConvertTo<Deployment>()
             };
         }
     }

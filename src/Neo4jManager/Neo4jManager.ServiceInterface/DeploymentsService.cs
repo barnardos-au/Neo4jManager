@@ -29,7 +29,6 @@ namespace Neo4jManager.ServiceInterface
         public object Delete(DeploymentsRequest request)
         {
             pool.DeleteAll();
-            Helper.KillNeo4jServices();
             HostHelper.KillJavaProcesses();
 
             return new HttpResult(HttpStatusCode.NoContent);

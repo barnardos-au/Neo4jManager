@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
 using ServiceStack;
-using ServiceStack.Web;
 
 namespace Neo4jManager.ServiceInterface
 {
@@ -16,45 +16,48 @@ namespace Neo4jManager.ServiceInterface
             this.pool = pool;
         }
 
-        public async Task<DeploymentResponse> Post(ControlRequest request)
+        public async Task<object> Post(ControlRequest request)
         {
-            var instance = pool[request.Id];
+            if (!pool.ContainsKey(request.Id))
+                return new HttpResult(HttpStatusCode.NotFound);
+
+            var keyedInstance = pool.Single(p => p.Key == request.Id);
             
             using (var cancellableRequest = Request.CreateCancellableRequest())
             {
                 switch (request.Operation)
                 {
                     case Operation.Start:
-                        await pool[request.Id].Start(cancellableRequest.Token);
+                        await keyedInstance.Value.Start(cancellableRequest.Token);
                         break;
 
                     case Operation.Stop:
-                        await pool[request.Id].Stop(cancellableRequest.Token);
+                        await keyedInstance.Value.Stop(cancellableRequest.Token);
                         break;
 
                     case Operation.Restart:
-                        await pool[request.Id].Restart(cancellableRequest.Token);
+                        await keyedInstance.Value.Restart(cancellableRequest.Token);
                         break;
                     
                     case Operation.Clear:
-                        await pool[request.Id].Clear(cancellableRequest.Token);
+                        await keyedInstance.Value.Clear(cancellableRequest.Token);
                         break;
                     
                     case Operation.Backup:
-                        await pool[request.Id].Backup(
+                        await keyedInstance.Value.Backup(
                             cancellableRequest.Token,
                             request.DestinationPath,
                             request.StopInstanceBeforeBackup);
                         break;
 
                     case Operation.Restore:
-                        await pool[request.Id].Restore(
+                        await keyedInstance.Value.Restore(
                             cancellableRequest.Token,
                             request.SourcePath);
                         break;
 
                     case Operation.Configure:
-                        pool[request.Id].Configure(
+                        keyedInstance.Value.Configure(
                             request.Setting.ConfigFile,
                             request.Setting.Key,
                             request.Setting.Value);
@@ -67,7 +70,7 @@ namespace Neo4jManager.ServiceInterface
 
             return new DeploymentResponse
             {
-                Deployment = instance.ConvertTo<Deployment>()
+                Deployment = keyedInstance.ConvertTo<Deployment>()
             };
         }
     }
