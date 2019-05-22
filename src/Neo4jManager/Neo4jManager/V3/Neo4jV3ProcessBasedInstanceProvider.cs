@@ -87,6 +87,12 @@ namespace Neo4jManager.V3
             configEditors[configFile].SetValue(key, value);
         }
 
+        public virtual void DownloadPlugin(string pluginUrl)
+        {
+            var pluginsFolder = Path.Combine(neo4jHomeFolder, "plugins");
+            Helper.DownloadFile(pluginUrl, pluginsFolder);
+        }
+
         public virtual Neo4jVersion Version { get; }
 
         public virtual Neo4jEndpoints Endpoints { get; }

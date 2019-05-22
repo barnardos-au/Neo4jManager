@@ -20,5 +20,6 @@ namespace Neo4jManager
         Neo4jEndpoints Endpoints { get; }
         string DataPath { get; }
         Status Status { get; }
+        void DownloadPlugin(string pluginUrl);
     }
 }
