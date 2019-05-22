@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using AutoMapper;
 using Funq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -64,21 +63,8 @@ namespace Neo4jManager.Host
             container.RegisterAutoWiredAs<Neo4jInstanceFactory, INeo4jInstanceFactory>().ReusedWithin(ReuseScope.None);
             container.RegisterAutoWiredAs<Neo4jDeploymentsPool, INeo4jDeploymentsPool>().ReusedWithin(ReuseScope.Container);
 
-            var mapperConfig = new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<Neo4jVersion, Version>()
-                    .ForMember(dest => dest.VersionNumber, opts => opts.MapFrom(s => s.Version));
-                cfg.CreateMap<Neo4jEndpoints, Endpoints>();
-                cfg.CreateMap<KeyValuePair<string, INeo4jInstance>, Deployment>()
-                    .ForMember(dest => dest.Id, opts => opts.MapFrom(s => s.Key))
-                    .ForMember(dest => dest.DataPath, opts => opts.MapFrom(s => s.Value.DataPath))
-                    .ForMember(dest => dest.Version, opts => opts.MapFrom(s => s.Value.Version))
-                    .ForMember(dest => dest.Endpoints, opts => opts.MapFrom(s => s.Value.Endpoints))
-                    .ForMember(dest => dest.Status, opts => opts.MapFrom(s => s.Value.Status.GetDescription()));
-            });
-            container.Register(c => mapperConfig.CreateMapper()).ReusedWithin(ReuseScope.None);
-
             ConfigurePlugins();
+            ConfigureMappers();
         }
 
         private void ConfigurePlugins()
@@ -86,6 +72,18 @@ namespace Neo4jManager.Host
             Plugins.Add(new CancellableRequestsFeature());
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature());
+        }
+
+        private void ConfigureMappers()
+        {
+            AutoMapping.RegisterConverter<KeyValuePair<string, INeo4jInstance>, Deployment>(kvp => new Deployment
+            {
+                Id = kvp.Key, 
+                DataPath = kvp.Value.DataPath,
+                Endpoints = kvp.Value.Endpoints.ConvertTo<Endpoints>(),
+                Version = kvp.Value.Version.ConvertTo<Version>(),
+                Status = kvp.Value.Status.ToString()
+            });
         }
     }
 }
