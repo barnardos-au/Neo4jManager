@@ -70,8 +70,8 @@ namespace Neo4jManager
             Console.WriteLine($"Downloading file from {downloadFileUrl}");
             using (var webClient = new WebClient())
             {
-                Uri uri = new Uri(downloadFileUrl);
-                var fileName = System.IO.Path.GetFileName(uri.LocalPath);
+                var uri = new Uri(downloadFileUrl);
+                var fileName = Path.GetFileName(uri.LocalPath);
                 webClient.DownloadFile(downloadFileUrl, $@"{destinationFolder}\{fileName}");
             }
         }

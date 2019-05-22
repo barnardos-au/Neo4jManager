@@ -56,13 +56,10 @@ namespace Neo4jManager.ServiceInterface
                 }
             });
 
-            if (request.Settings != null)
+            request.Settings?.ForEach(s =>
             {
-                foreach (var setting in request.Settings)
-                {
-                    instance.Configure(setting.ConfigFile, setting.Key, setting.Value);
-                }
-            }
+                instance.Configure(s.ConfigFile, s.Key, s.Value);
+            });
 
             return new DeploymentResponse
             {
