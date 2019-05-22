@@ -1,12 +1,8 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
-using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ServiceStack;
@@ -83,56 +79,6 @@ namespace Neo4jManager
             var invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
 
             return Regex.Replace(folderName, invalidRegStr, "_");
-        }
-
-        public static void KillNeo4jServices()
-        {
-            var neo4jServices = ServiceController.GetServices()
-                .Where(s => s.ServiceName.Contains("neo4j", StringComparison.OrdinalIgnoreCase) 
-                && !s.ServiceName.Contains("neo4jmanager", StringComparison.OrdinalIgnoreCase));
-
-            foreach (var service in neo4jServices)
-            {
-                SafeAction(() =>
-                {
-                    service.Stop();
-                    service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
-                });
-
-                SafeAction(() =>
-                {
-                    using (var process = new Process
-                    {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "SC.EXE",
-                            Arguments = $"delete {service.ServiceName}"
-                        }
-                    })
-                    {
-                        process.Start();
-                        process.WaitForExit(10000);
-                    }
-                });
-            }
-        }
-
-        public static string GetDescription(this Enum en)
-        {
-            var type = en.GetType();
-
-            var memInfo = type.GetMember(en.ToString());
-
-            if (memInfo == null || memInfo.Length <= 0) return en.ToString();
-
-            var attrs = memInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
-
-            if (attrs != null && attrs.Length > 0)
-            {
-                return ((DescriptionAttribute)attrs[0]).Description;
-            }
-
-            return en.ToString();
         }
 
         public static bool Contains(this string source, string toCheck, StringComparison comp)
