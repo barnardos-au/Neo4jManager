@@ -1,0 +1,1 @@
+dotnet build ./Neo4jManager.Host/Neo4jManager.Host.csproj -c Release

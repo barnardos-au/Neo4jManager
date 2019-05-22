@@ -34,5 +34,7 @@ namespace Neo4jManager.Client
         Task BackupAsync(string id, string destinationPath, bool stopInstanceBeforeBackup = true);
         void Restore(string id, string sourcePath);
         Task RestoreAsync(string id, string sourcePath);
+		void Configure(string id, string configFile, string key, string value);
+		Task ConfigureAsync(string id, string configFile, string key, string value);
     }
 }
