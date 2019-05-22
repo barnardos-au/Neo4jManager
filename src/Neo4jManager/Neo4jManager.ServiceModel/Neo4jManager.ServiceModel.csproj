@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.0.0</Version>
+    <Title>Neo4jManager</Title>
+    <Authors>Neil Dobson</Authors>
+    <Company>Barnardos Australia</Company>
+    <Description>A library containing service models used by neo4j manager</Description>
+    <PackageProjectUrl>https://github.com/barnardos-au/Neo4jManager</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/barnardos-au/Neo4jManager</RepositoryUrl>
+    <PackageTags>neo4j manager</PackageTags>
+    <Copyright>Copyright ©2019 Barnardos Australia</Copyright>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/29527012</PackageIconUrl>
     <RootNamespace>Neo4jManager.ServiceModel</RootNamespace>
     <AssemblyName>Neo4jManager.ServiceModel</AssemblyName>
   </PropertyGroup>
