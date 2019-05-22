@@ -56,7 +56,6 @@ namespace Neo4jManager
                     {
                         instance.Configure(configFile, "dbms.connector.https.enabled", "false");
                     }
-                    instance.Configure(configFile, "dbms.security.procedures.unrestricted", "apoc.*");
                     break;
 
                 default:

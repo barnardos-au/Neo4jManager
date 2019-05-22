@@ -48,6 +48,14 @@ namespace Neo4jManager.ServiceInterface
 
             var instance = pool.Create(neo4jVersion, request.Id);
 
+            request.PluginUrls?.ForEach(p =>
+            {
+                if (!p.IsEmpty())
+                {
+                    instance.DownloadPlugin(p);
+                }
+            });
+
             if (request.Settings != null)
             {
                 foreach (var setting in request.Settings)
