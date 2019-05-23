@@ -1,27 +1,42 @@
-using System.ServiceProcess;
+using System;
+using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using Topshelf;
 
 namespace Neo4jManager.Host
 {
     // ReSharper disable once InconsistentNaming
-    public class Neo4jManagerService : ServiceBase
+    public class Neo4jManagerService : ServiceControl
     {
         private IWebHost webHost;
         
-        public Neo4jManagerService()
+        public bool Start(HostControl hostControl)
         {
-            ServiceName = "Neo4jManager";
+            webHost = CreateWebHostBuilder();
+            webHost.RunAsync();
+            return true;
         }
- 
-        protected override void OnStart(string[] args)
+
+        public bool Stop(HostControl hostControl)
         {
-            webHost = Program.CreateWebHost();
-            webHost.StartAsync();
+            webHost.StopAsync().Wait();
+            return true;
         }
- 
-        protected override void OnStop()
+        
+        private static IWebHost CreateWebHostBuilder()
         {
-            AsyncHelper.RunSync(() => webHost.StopAsync());
+            return new WebHostBuilder()
+                .UseKestrel()
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    logging.AddEventLog();
+                })
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .UseUrls(Environment.GetEnvironmentVariable("Neo4jManager.Url") ?? "http://localhost:7400/")
+                .Build();
         }
+
     }
 }
