@@ -7,39 +7,34 @@ namespace Neo4jManager
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jInstanceFactory : INeo4jInstanceFactory
     {
-        private readonly IFileCopy fileCopy;
-        private readonly IJavaResolver javaResolver;
-        private string javaPath;
+        public const string Neo4jConfigFile = "neo4j.conf";
 
-        public Neo4jInstanceFactory(
-            IFileCopy fileCopy,
-            IJavaResolver javaResolver)
+        private readonly Func<Neo4jDeploymentRequest, Neo4jV3JavaInstanceProvider> javaInstanceFunc;
+
+        public Neo4jInstanceFactory(Func<Neo4jDeploymentRequest, Neo4jV3JavaInstanceProvider> javaInstanceFunc)
         {
-            this.fileCopy = fileCopy;
-            this.javaResolver = javaResolver;
+            this.javaInstanceFunc = javaInstanceFunc;
         }
 
-        private string JavaPath => javaPath ?? (javaPath = javaResolver.GetJavaPath());
-
-        public INeo4jInstance Create(string neo4jFolder, Neo4jVersion neo4jVersion, Neo4jEndpoints endpoints)
+        public INeo4jInstance Create(Neo4jDeploymentRequest request)
         {
             INeo4jInstance instance;
 
-            switch (neo4jVersion.Architecture)
+            switch (request.Version.Architecture)
             {
                 case Neo4jArchitecture.V3:
-                    instance = new Neo4jV3JavaInstanceProvider(JavaPath, neo4jFolder, fileCopy, neo4jVersion, endpoints);
+                    instance = javaInstanceFunc(request);
 
-                    const string configFile = Neo4jV3ProcessBasedInstanceProvider.Neo4jConfigFile;
+                    const string configFile = Neo4jConfigFile;
                     instance.Configure(configFile, "dbms.security.auth_enabled", "false");
                     instance.Configure(configFile, "dbms.allow_format_migration", "true");
                     instance.Configure(configFile, "dbms.directories.import", "");
 
-                    instance.Configure(configFile, "dbms.connector.http.listen_address", $":{endpoints.HttpEndpoint.Port}");
+                    instance.Configure(configFile, "dbms.connector.http.listen_address", $":{request.Endpoints.HttpEndpoint.Port}");
 
-                    if (endpoints.BoltEndpoint != null)
+                    if (request.Endpoints.BoltEndpoint != null)
                     {
-                        instance.Configure(configFile, "dbms.connector.bolt.listen_address", $":{endpoints.BoltEndpoint.Port}");
+                        instance.Configure(configFile, "dbms.connector.bolt.listen_address", $":{request.Endpoints.BoltEndpoint.Port}");
                         instance.Configure(configFile, "dbms.connector.bolt.enabled", "true");
                     }
                     else
@@ -47,9 +42,9 @@ namespace Neo4jManager
                         instance.Configure(configFile, "dbms.connector.bolt.enabled", "false");
                     }
 
-                    if (endpoints.HttpsEndpoint != null)
+                    if (request.Endpoints.HttpsEndpoint != null)
                     {
-                        instance.Configure(configFile, "dbms.connector.https.listen_address", $":{endpoints.HttpsEndpoint.Port}");
+                        instance.Configure(configFile, "dbms.connector.https.listen_address", $":{request.Endpoints.HttpsEndpoint.Port}");
                         instance.Configure(configFile, "dbms.connector.https.enabled", "true");
                     }
                     else
@@ -59,7 +54,7 @@ namespace Neo4jManager
                     break;
 
                 default:
-                    throw new ArgumentException($"Architecture: {neo4jVersion.Architecture} unknown");
+                    throw new ArgumentException($"Architecture: {request.Version.Architecture} unknown");
             }
 
             return instance;

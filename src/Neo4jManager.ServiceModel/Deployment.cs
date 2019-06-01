@@ -1,4 +1,6 @@
-﻿namespace Neo4jManager.ServiceModel
+﻿using System;
+
+namespace Neo4jManager.ServiceModel
 {
     public class Deployment
     {
@@ -7,5 +9,6 @@
         public Endpoints Endpoints { get; set; }
         public Version Version { get; set; }
         public string Status { get; set; }
+        public DateTime? ExpiresOn { get; set; }
     }
 }

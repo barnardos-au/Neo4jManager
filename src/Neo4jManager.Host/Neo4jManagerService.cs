@@ -37,6 +37,5 @@ namespace Neo4jManager.Host
                 .UseUrls(Environment.GetEnvironmentVariable("Neo4jManager.Url") ?? "http://localhost:7400/")
                 .Build();
         }
-
     }
 }

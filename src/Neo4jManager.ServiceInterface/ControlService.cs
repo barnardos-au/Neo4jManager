@@ -67,10 +67,7 @@ namespace Neo4jManager.ServiceInterface
                 }
             }
 
-            return new DeploymentResponse
-            {
-                Deployment = keyedInstance.ConvertTo<Deployment>()
-            };
+            return keyedInstance.ConvertTo<DeploymentResponse>();
         }
     }
 }

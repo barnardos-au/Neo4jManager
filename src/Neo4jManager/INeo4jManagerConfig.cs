@@ -7,6 +7,7 @@ namespace Neo4jManager
     {
         string Neo4jBasePath { get; set; }
         long StartHttpPort { get; set; }
+        long StartHttpsPort { get; set; }
         long StartBoltPort { get; set; }
     }
 }

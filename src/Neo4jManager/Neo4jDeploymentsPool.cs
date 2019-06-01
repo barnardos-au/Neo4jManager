@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -7,8 +7,10 @@ using System.Linq;
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class Neo4jDeploymentsPool : Dictionary<string, INeo4jInstance>, INeo4jDeploymentsPool
+    public class Neo4jDeploymentsPool : ConcurrentDictionary<string, INeo4jInstance>, INeo4jDeploymentsPool
     {
+        private static readonly object _object = new object();
+        
         private readonly INeo4jManagerConfig neo4JManagerConfig;
         private readonly INeo4jInstanceFactory neo4jInstanceFactory;
 
@@ -20,41 +22,45 @@ namespace Neo4jManager
             this.neo4jInstanceFactory = neo4jInstanceFactory;
         }
 
-        public INeo4jInstance Create(Neo4jVersion neo4jVersion, string id)
+        public string Create(Neo4jDeploymentRequest request)
         {
-            Helper.Download(neo4jVersion, neo4JManagerConfig.Neo4jBasePath);
-            Helper.Extract(neo4jVersion, neo4JManagerConfig.Neo4jBasePath);
+            var id = Guid.NewGuid().ToString();
+            
+            Helper.Download(request.Version, neo4JManagerConfig.Neo4jBasePath);
+            Helper.Extract(request.Version, neo4JManagerConfig.Neo4jBasePath);
 
             var deploymentFolderName = Helper.GenerateValidFolderName(id);
             if (string.IsNullOrEmpty(deploymentFolderName)) throw new ArgumentException("Error creating folder with given Id");
 
             var targetDeploymentPath = Path.Combine(neo4JManagerConfig.Neo4jBasePath, deploymentFolderName);
             Helper.SafeDelete(targetDeploymentPath);
-            Helper.CopyDeployment(neo4jVersion, neo4JManagerConfig.Neo4jBasePath, targetDeploymentPath);
+            Helper.CopyDeployment(request.Version, neo4JManagerConfig.Neo4jBasePath, targetDeploymentPath);
 
-            var endpoints = new Neo4jEndpoints
+            request.Neo4jFolder = Directory.GetDirectories(targetDeploymentPath)
+                .First(f => f.Contains(request.Version.Version, StringComparison.OrdinalIgnoreCase));
+
+            lock (_object)
             {
-                HttpEndpoint = new Uri($"http://localhost:{neo4JManagerConfig.StartHttpPort + Count}"),
-            };
+                request.Endpoints = new Neo4jEndpoints
+                {
+                    HttpEndpoint = new Uri($"http://localhost:{neo4JManagerConfig.StartHttpPort + Count}"),
+                    BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + Count}"),
+                };
 
-            endpoints.BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + Count}");
+                var instance = neo4jInstanceFactory.Create(request);
 
-            var neo4jFolder = Directory.GetDirectories(targetDeploymentPath)
-                .First(f => f.Contains(neo4jVersion.Version, StringComparison.OrdinalIgnoreCase));
+                TryAdd(id, instance);
 
-            var instance = neo4jInstanceFactory.Create(neo4jFolder, neo4jVersion, endpoints);
-
-            Add(id, instance);
-
-            return instance;
+                return id;
+            }
         }
-
 
         public void Delete(string id)
         {
             var instance = this[id];
             instance.Dispose();
-            Remove(id);
+
+            TryRemove(id, out instance);
         }
 
         public void DeleteAll()

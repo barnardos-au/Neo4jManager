@@ -11,7 +11,7 @@ namespace Neo4jManager
     {
         public static async Task<bool> IsReady(this INeo4jInstance instance)
         {
-            var endpoint = instance.Endpoints.HttpsEndpoint ?? instance.Endpoints.HttpEndpoint;
+            var endpoint = instance.Deployment.Endpoints.HttpsEndpoint ?? instance.Deployment.Endpoints.HttpEndpoint;
             var uriBuilder = new UriBuilder(endpoint);
             if (uriBuilder.Path.EndsWith("/"))
                 uriBuilder.Path += "db/data/";

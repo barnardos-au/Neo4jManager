@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Autofac;
 using Funq;
 using Neo4jManager.ServiceInterface;
 using Neo4jManager.ServiceModel;
+using Neo4jManager.V3;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Configuration;
@@ -40,16 +43,22 @@ namespace Neo4jManager.Tests
 
             public override void Configure(Container container)
             {
-                container.RegisterAutoWiredAs<FileCopy, IFileCopy>();
-                container.Register<INeo4jManagerConfig>(c => new Neo4jManagerConfig
+                var builder = new ContainerBuilder();
+
+                builder.RegisterType<FileCopy>().AsImplementedInterfaces();
+                builder.Register(ctx => new Neo4jManagerConfig
                 {
                     Neo4jBasePath = @"c:\Neo4jManager",
                     StartBoltPort = 7691,
                     StartHttpPort = 7401
-                }).ReusedWithin(ReuseScope.None);
-                container.RegisterAutoWiredAs<ZuluJavaResolver, IJavaResolver>().ReusedWithin(ReuseScope.None);
-                container.RegisterAutoWiredAs<Neo4jInstanceFactory, INeo4jInstanceFactory>().ReusedWithin(ReuseScope.None);
-                container.RegisterAutoWiredAs<Neo4jDeploymentsPool, INeo4jDeploymentsPool>().ReusedWithin(ReuseScope.Container);
+                }).AsImplementedInterfaces();
+                builder.RegisterType<ZuluJavaResolver>().AsImplementedInterfaces();
+                builder.RegisterType<Neo4jInstanceFactory>().AsImplementedInterfaces();
+                builder.RegisterType<Neo4jV3JavaInstanceProvider>().AsImplementedInterfaces().AsSelf();
+                builder.RegisterType<Neo4jDeploymentsPool>().AsImplementedInterfaces().SingleInstance();
+            
+                IContainerAdapter adapter = new AutofacIocAdapter(builder.Build());
+                container.Adapter = adapter;
                 
                 Plugins.Add(new CancellableRequestsFeature());
             }
@@ -70,63 +79,60 @@ namespace Neo4jManager.Tests
         public IServiceClient CreateClient() => new JsonServiceClient(BaseUri);
 
         [Test]
-        public void Can_Install_And_Start_Neo4j()
+        public async Task Can_Install_And_Start_Neo4j()
         {
             var client = CreateClient();
 
-            var deploymentResponse = client.Post(new DeploymentRequest
+            var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
             {
-                Id = "1",
-                Version = "3.5.3"
+                Version = "3.5.3",
+                LeasePeriod = TimeSpan.FromMinutes(10)
             });
 
-            Assert.IsNotNull(deploymentResponse.Deployment);
-            
+            Assert.IsNotNull(deploymentResponse);
+
             var deployment = deploymentResponse.Deployment;
+            Assert.IsNotNull(deployment);
             Assert.IsNotNull(deployment.DataPath);
             Assert.IsTrue(deployment.DataPath.StartsWith(@"c:\neo4jmanager", StringComparison.OrdinalIgnoreCase));
-            Assert.AreEqual("1", deployment.Id);
+            Assert.IsNotEmpty(deployment.Id);
             Assert.IsNotNull(deployment.Version);
-            Assert.AreEqual("V3", deployment.Version.Architecture);
-            Assert.IsNotNull(deployment.Version.DownloadUrl);
             Assert.AreEqual("3.5.3", deployment.Version.VersionNumber);
-            Assert.IsNotNull(deployment.Version.ZipFileName);
-            Assert.IsNotNull(deployment.Endpoints);
             Assert.IsNotNull(deployment.Endpoints.BoltEndpoint);
             Assert.IsNotNull(deployment.Endpoints.HttpEndpoint);
             Assert.IsNull(deployment.Endpoints.HttpsEndpoint);
             Assert.AreEqual("Stopped", deployment.Status);
 
-            var controlResponse = client.Post(new ControlRequest
+            var controlResponse = await client.PostAsync(new ControlRequest
             {
-                Id = "1",
+                Id = deployment.Id,
                 Operation = Operation.Start
             });
 
-            Assert.IsNotNull(controlResponse.Deployment);
+            Assert.IsNotNull(controlResponse);
+            
             deployment = controlResponse.Deployment;
+            Assert.IsNotNull(deployment);
             Assert.IsNotNull(deployment.DataPath);
             Assert.IsTrue(deployment.DataPath.StartsWith(@"c:\neo4jmanager", StringComparison.OrdinalIgnoreCase));
-            Assert.AreEqual("1", deployment.Id);
+            Assert.IsNotEmpty(deployment.Id);
             Assert.IsNotNull(deployment.Version);
-            Assert.AreEqual("V3", deployment.Version.Architecture);
-            Assert.IsNotNull(deployment.Version.DownloadUrl);
             Assert.AreEqual("3.5.3", deployment.Version.VersionNumber);
-            Assert.IsNotNull(deployment.Version.ZipFileName);
-            Assert.IsNotNull(deployment.Endpoints);
             Assert.IsNotNull(deployment.Endpoints.BoltEndpoint);
             Assert.IsNotNull(deployment.Endpoints.HttpEndpoint);
             Assert.IsNull(deployment.Endpoints.HttpsEndpoint);
             Assert.AreEqual("Started", deployment.Status);
 
-            controlResponse = client.Post(new ControlRequest
+            controlResponse = await client.PostAsync(new ControlRequest
             {
-                Id = "1",
+                Id = deployment.Id,
                 Operation = Operation.Stop
             });
 
-            Assert.IsNotNull(controlResponse.Deployment);
+            Assert.IsNotNull(controlResponse);
+
             deployment = controlResponse.Deployment;
+            Assert.IsNotNull(deployment);
             Assert.AreEqual("Stopped", deployment.Status);
         }
     }

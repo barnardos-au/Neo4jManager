@@ -37,12 +37,37 @@ namespace Neo4jManager.ServiceInterface
                 return version;
             });
 
+            AutoMapping.RegisterConverter<Neo4jEndpoints, Endpoints>(neo4jEndpoints =>
+            {
+                var endpoints = new Endpoints
+                {
+                    BoltEndpoint = neo4jEndpoints.BoltEndpoint?.AbsoluteUri,
+                    HttpEndpoint = neo4jEndpoints.HttpEndpoint?.AbsoluteUri,
+                    HttpsEndpoint = neo4jEndpoints.HttpsEndpoint?.AbsoluteUri
+                };
+                
+                return endpoints;
+            });
+
             AutoMapping.RegisterConverter<KeyValuePair<string, INeo4jInstance>, Deployment>(kvp =>
             {
-                var deployment = kvp.Value.ConvertTo<Deployment>(skipConverters:true);
+                var neo4JDeployment = kvp.Value.Deployment;
+
+                var deployment = neo4JDeployment.ConvertTo<Deployment>();
                 deployment.Id = kvp.Key;
+                deployment.Status = kvp.Value.Status.ToString();
 
                 return deployment;
+            });
+            
+            AutoMapping.RegisterConverter<KeyValuePair<string, INeo4jInstance>, DeploymentResponse>(kvp =>
+            {
+                var response = new DeploymentResponse
+                {
+                    Deployment = kvp.ConvertTo<Deployment>()
+                };
+
+                return response;
             });
         }
     }

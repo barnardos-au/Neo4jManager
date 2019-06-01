@@ -16,9 +16,9 @@ namespace Neo4jManager.Client
         Task<Deployment> GetDeploymentAsync(string id);
         void DeleteAll();
         Task DeleteAllAsync();
-        Deployment Create(string id, string versionNumber, List<Setting> settings = null,
+        Deployment Create(string versionNumber, List<Setting> settings = null,
             List<string> pluginUrls = null);
-        Task<Deployment> CreateAsync(string id, string versionNumber, List<Setting> settings = null,
+        Task<Deployment> CreateAsync(string versionNumber, List<Setting> settings = null,
             List<string> pluginUrls = null);
         void Delete(string id);
         Task DeleteAsync(string id);

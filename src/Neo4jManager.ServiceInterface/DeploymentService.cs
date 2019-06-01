@@ -1,7 +1,7 @@
 ﻿using ServiceStack;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
 using ServiceStack.Configuration;
 
@@ -28,42 +28,8 @@ namespace Neo4jManager.ServiceInterface
                 throw HttpError.NotFound($"Deployment {request.Id} not found");
             
             var keyedInstance = pool.SingleOrDefault(p => p.Key == request.Id);
-
-            return new DeploymentResponse { Deployment = keyedInstance.ConvertTo<Deployment>() };
-        }
-
-        // Create
-        public DeploymentResponse Post(DeploymentRequest request)
-        {
-            var version = appSettings.Neo4jVersions()
-                .Single(v => v.VersionNumber == request.Version);
-            var neo4jVersion = new Neo4jVersion
-            {
-                Architecture = (Neo4jArchitecture)Enum.Parse(typeof(Neo4jArchitecture), version.Architecture),
-                DownloadUrl = version.DownloadUrl,
-                Version = version.VersionNumber,
-                ZipFileName = version.ZipFileName
-            };
-
-            var instance = pool.Create(neo4jVersion, request.Id);
-
-            request.PluginUrls?.ForEach(p =>
-            {
-                if (!p.IsEmpty())
-                {
-                    instance.DownloadPlugin(p);
-                }
-            });
-
-            request.Settings?.ForEach(s =>
-            {
-                instance.Configure(s.ConfigFile, s.Key, s.Value);
-            });
-
-            return new DeploymentResponse
-            {
-                Deployment = new KeyValuePair<string, INeo4jInstance>(request.Id, instance).ConvertTo<Deployment>()
-            };
+            
+            return keyedInstance.ConvertTo<DeploymentResponse>();
         }
 
         // Delete
@@ -76,10 +42,7 @@ namespace Neo4jManager.ServiceInterface
             
             pool.Delete(request.Id);
 
-            return new DeploymentResponse
-            {
-                Deployment = keyedInstance.ConvertTo<Deployment>()
-            };
+            return keyedInstance.ConvertTo<DeploymentResponse>();
         }
     }
 }

@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Autofac;
 using Funq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Neo4jManager.ServiceInterface;
 using Neo4jManager.ServiceModel;
+using Neo4jManager.V3;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Configuration;
@@ -52,16 +54,22 @@ namespace Neo4jManager.Host
 
         public override void Configure(Container container)
         {
-            container.RegisterAutoWiredAs<FileCopy, IFileCopy>();
-            container.Register<INeo4jManagerConfig>(c => new Neo4jManagerConfig
+            var builder = new ContainerBuilder();
+
+            builder.RegisterType<FileCopy>().AsImplementedInterfaces();
+            builder.Register(ctx => new Neo4jManagerConfig
             {
                 Neo4jBasePath = @"c:\Neo4jManager",
                 StartBoltPort = 7691,
                 StartHttpPort = 7401
-            }).ReusedWithin(ReuseScope.None);
-            container.RegisterAutoWiredAs<ZuluJavaResolver, IJavaResolver>().ReusedWithin(ReuseScope.None);
-            container.RegisterAutoWiredAs<Neo4jInstanceFactory, INeo4jInstanceFactory>().ReusedWithin(ReuseScope.None);
-            container.RegisterAutoWiredAs<Neo4jDeploymentsPool, INeo4jDeploymentsPool>().ReusedWithin(ReuseScope.Container);
+            }).AsImplementedInterfaces();
+            builder.RegisterType<ZuluJavaResolver>().AsImplementedInterfaces();
+            builder.RegisterType<Neo4jInstanceFactory>().AsImplementedInterfaces();
+            builder.RegisterType<Neo4jV3JavaInstanceProvider>().AsImplementedInterfaces().AsSelf();
+            builder.RegisterType<Neo4jDeploymentsPool>().AsImplementedInterfaces().SingleInstance();
+            
+            IContainerAdapter adapter = new AutofacIocAdapter(builder.Build());
+            container.Adapter = adapter;
 
             ConfigurePlugins();
             Neo4jManager.ServiceInterface.Helper.ConfigureMappers();
