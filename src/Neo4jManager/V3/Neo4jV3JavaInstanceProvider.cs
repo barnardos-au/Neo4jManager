@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Medallion.Shell;
 
 namespace Neo4jManager.V3
 {
@@ -76,23 +77,23 @@ namespace Neo4jManager.V3
         public async Task Stop(CancellationToken token)
         {
             Status = Status.Stopping;
-            await Task.Run(Stop, token);
+
+            if (process == null || process.HasExited) return;
+
+            if (Command.TryAttachToProcess(process.Id, out var command))
+            {
+                await command.TrySignalAsync(CommandSignal.ControlC);
+            }
+
+            process.WaitForExit(defaultWaitForKill);
+
+            Status = Status.Stopped;
         }
         
         public async Task Restart(CancellationToken token)
         {
             await Stop(token);
             await Start(token);
-        }
-
-        private void Stop()
-        {
-            if (process == null || process.HasExited) return;
-
-            process.Kill();
-            process.WaitForExit(defaultWaitForKill);
-
-            Status = Status.Stopped;
         }
         
         public void Configure(string configFile, string key, string value)
@@ -119,60 +120,17 @@ namespace Neo4jManager.V3
 
             if (stopInstanceBeforeBackup)
             {
-                //await Stop(token);
-                var id = process.Id;
-
-                var javaCmd = new StringBuilder();
-                javaCmd
-                    .Append(quotes)
-                    .Append(javaResolver.GetJavaPath())
-                    .Append(quotes)
-                    .Append($" {GetDumpArguments(destinationPath)}");
-
-                var cmdString = javaCmd.ToString();
-
-                Process cmd = new Process
+                await StopWhile(token, () =>
                 {
-                    StartInfo =
+                    var arguments = GetDumpArguments(destinationPath);
+                    using (var dumpProcess = GetProcess(arguments))
                     {
-                        FileName = "cmd.exe",
-                        RedirectStandardInput = true,
-                        RedirectStandardOutput = true,
-                        CreateNoWindow = true,
-                        UseShellExecute = false,
-                        WorkingDirectory = request.Neo4jFolder
+                        dumpProcess.StartInfo.WorkingDirectory = request.Neo4jFolder;
+            
+                        dumpProcess.Start();
+                        dumpProcess.WaitForExit();
                     }
-                };
-                cmd.Start();
-
-                cmd.StandardInput.WriteLine(cmdString);
-                cmd.StandardInput.Flush();
-                cmd.StandardInput.Close();
-                cmd.WaitForExit();
-                var x = cmd.StandardOutput.ReadToEnd();
-                Console.WriteLine(x);
-               
-//                using (var dumpProcess = new Process
-//                {
-//                    StartInfo = new ProcessStartInfo
-//                    {
-//                        FileName = javaResolver.GetJavaPath(),
-//                        Arguments = GetDumpArguments(destinationPath),
-//                        RedirectStandardError = true,
-//                        RedirectStandardOutput = true,
-//                        WorkingDirectory = request.Neo4jFolder,
-//                        CreateNoWindow = false,
-//                    }
-//                })
-//                {
-//                    dumpProcess.Start();
-//                    while (!dumpProcess.HasExited)
-//                    {
-//                        await Task.Delay(1000, token);
-//                    }
-//                }
-
-                await Start(token);
+                });
             }
             else
             {
@@ -195,7 +153,7 @@ namespace Neo4jManager.V3
         
         public void Dispose()
         {
-            Stop();
+            AsyncHelper.RunSync(() => Stop(CancellationToken.None));
 
             process?.Dispose();
         }
@@ -215,7 +173,7 @@ namespace Neo4jManager.V3
                 {
                     FileName = javaResolver.GetJavaPath(),
                     Arguments = arguments,
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     CreateNoWindow = true,
                 },
             };
@@ -236,14 +194,12 @@ namespace Neo4jManager.V3
                 .Append(quotes)
                 .Append(request.Neo4jFolder)
                 .Append(quotes)
-                .Append(" -Dfile.encoding=UTF-8")
                 .Append(" org.neo4j.commandline.admin.AdminTool dump")
                 .Append(" --database=graph.db")
                 .Append(" --to=")
                 .Append(quotes)
                 .Append(destinationPath)
-                .Append(quotes)
-                .Append(@" > c:\temp\log.txt 2>&1");
+                .Append(quotes);
 
             return builder.ToString();
         }

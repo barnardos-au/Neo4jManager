@@ -126,6 +126,13 @@ namespace Neo4jManager.Tests
             Assert.IsNull(deployment.Endpoints.HttpsEndpoint);
             Assert.AreEqual("Started", deployment.Status);
 
+            var backupRespose = await client.PostAsync(new ControlRequest
+            {
+                Id = deployment.Id,
+                Operation = Operation.Backup,
+                DestinationPath = @"c:\temp\new.dump"
+            });
+            
             controlResponse = await client.PostAsync(new ControlRequest
             {
                 Id = deployment.Id,
@@ -138,12 +145,6 @@ namespace Neo4jManager.Tests
             Assert.IsNotNull(deployment);
             Assert.AreEqual("Stopped", deployment.Status);
 
-            var backupRespose = await client.PostAsync(new ControlRequest
-            {
-                Id = deployment.Id,
-                Operation = Operation.Backup,
-                DestinationPath = @"c:\temp\new.dump"
-            });
         }
     }
 }
