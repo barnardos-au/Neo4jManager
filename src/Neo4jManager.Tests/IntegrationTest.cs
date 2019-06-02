@@ -74,7 +74,10 @@ namespace Neo4jManager.Tests
         }
 
         [OneTimeTearDown]
-        public void OneTimeTearDown() => appHost.Dispose();
+        public void OneTimeTearDown()
+        {
+            appHost.Dispose();
+        }
 
         public IServiceClient CreateClient() => new JsonServiceClient(BaseUri);
 
@@ -134,6 +137,13 @@ namespace Neo4jManager.Tests
             deployment = controlResponse.Deployment;
             Assert.IsNotNull(deployment);
             Assert.AreEqual("Stopped", deployment.Status);
+
+            var backupRespose = await client.PostAsync(new ControlRequest
+            {
+                Id = deployment.Id,
+                Operation = Operation.Backup,
+                DestinationPath = @"c:\temp\new.dump"
+            });
         }
     }
 }

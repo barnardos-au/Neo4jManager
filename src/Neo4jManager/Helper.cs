@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
@@ -106,6 +107,24 @@ namespace Neo4jManager
             catch
             {
             }
+        }
+        
+        public static Task<int> RunProcessAsync(Process process)
+        {
+            var tcs = new TaskCompletionSource<int>();
+
+            process.EnableRaisingEvents = true;
+
+            process.Exited += (sender, args) =>
+            {
+                tcs.SetResult(process.ExitCode);
+                //process.CancelOutputRead();
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+
+            return tcs.Task;
         }
     }
 }

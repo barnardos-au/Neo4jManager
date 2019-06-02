@@ -58,9 +58,9 @@ namespace Neo4jManager.V3
         {
             if (process == null)
             {
-                process = GetProcess();
+                process = GetProcess(GetNeo4jStartArguments());
                 process.Start();
-                await this.WaitForReady(token);
+                await deployment.WaitForReady(token);
 
                 Status = Status.Started;
                 return;
@@ -69,7 +69,7 @@ namespace Neo4jManager.V3
             if (!process.HasExited) return;
             
             process.Start();
-            await this.WaitForReady(token);
+            await deployment.WaitForReady(token);
             Status = Status.Started;
         }
 
@@ -117,15 +117,67 @@ namespace Neo4jManager.V3
         {
             var dataPath = GetDataPath();
 
-            var action = new Action(() => fileCopy.MirrorFolders(dataPath, destinationPath));
-
             if (stopInstanceBeforeBackup)
             {
-                await StopWhile(token, action);
+                //await Stop(token);
+                var id = process.Id;
+
+                var javaCmd = new StringBuilder();
+                javaCmd
+                    .Append(quotes)
+                    .Append(javaResolver.GetJavaPath())
+                    .Append(quotes)
+                    .Append($" {GetDumpArguments(destinationPath)}");
+
+                var cmdString = javaCmd.ToString();
+
+                Process cmd = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = "cmd.exe",
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        WorkingDirectory = request.Neo4jFolder
+                    }
+                };
+                cmd.Start();
+
+                cmd.StandardInput.WriteLine(cmdString);
+                cmd.StandardInput.Flush();
+                cmd.StandardInput.Close();
+                cmd.WaitForExit();
+                var x = cmd.StandardOutput.ReadToEnd();
+                Console.WriteLine(x);
+               
+//                using (var dumpProcess = new Process
+//                {
+//                    StartInfo = new ProcessStartInfo
+//                    {
+//                        FileName = javaResolver.GetJavaPath(),
+//                        Arguments = GetDumpArguments(destinationPath),
+//                        RedirectStandardError = true,
+//                        RedirectStandardOutput = true,
+//                        WorkingDirectory = request.Neo4jFolder,
+//                        CreateNoWindow = false,
+//                    }
+//                })
+//                {
+//                    dumpProcess.Start();
+//                    while (!dumpProcess.HasExited)
+//                    {
+//                        await Task.Delay(1000, token);
+//                    }
+//                }
+
+                await Start(token);
             }
             else
             {
-                await Task.Run(action, token);
+                await Task.Run(
+                    () => fileCopy.MirrorFolders(dataPath, destinationPath), token);
             }
         }
 
@@ -155,21 +207,48 @@ namespace Neo4jManager.V3
             await Start(token);
         }
 
-        private Process GetProcess()
+        private Process GetProcess(string arguments)
         {
             return new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = javaResolver.GetJavaPath(),
-                    Arguments = GetJavaCmdArguments(),
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
+                    Arguments = arguments,
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                },
             };
         }
 
-        private string GetJavaCmdArguments()
+        private string GetDumpArguments(string destinationPath)
+        {
+            var javaToolsPath = javaResolver.GetToolsPath();
+            var builder = new StringBuilder();
+
+            builder
+                .Append(" -XX:+UseParallelGC")
+                .Append(" -classpath ")
+                .Append(quotes)
+                .Append($";{request.Neo4jFolder}/lib/*;{request.Neo4jFolder}/bin/*;{javaToolsPath}")
+                .Append(quotes)
+                .Append(" -Dbasedir=")
+                .Append(quotes)
+                .Append(request.Neo4jFolder)
+                .Append(quotes)
+                .Append(" -Dfile.encoding=UTF-8")
+                .Append(" org.neo4j.commandline.admin.AdminTool dump")
+                .Append(" --database=graph.db")
+                .Append(" --to=")
+                .Append(quotes)
+                .Append(destinationPath)
+                .Append(quotes)
+                .Append(@" > c:\temp\log.txt 2>&1");
+
+            return builder.ToString();
+        }
+
+        private string GetNeo4jStartArguments()
         {
             var builder = new StringBuilder();
 

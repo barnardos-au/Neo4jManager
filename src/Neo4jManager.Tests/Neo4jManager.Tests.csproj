@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Neo4jManager.ServiceInterface\Neo4jManager.ServiceInterface.csproj" />
     <ProjectReference Include="..\Neo4jManager.ServiceModel\Neo4jManager.ServiceModel.csproj" />
     <PackageReference Include="Autofac" Version="4.9.2" />
+    <PackageReference Include="MedallionShell" Version="1.6.0" />
 
     <PackageReference Include="NUnit" Version="3.10.*" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.10.*" />

@@ -9,9 +9,9 @@ namespace Neo4jManager
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class Neo4jInstanceProviderExtensions
     {
-        public static async Task<bool> IsReady(this INeo4jInstance instance)
+        public static async Task<bool> IsReady(this INeo4jDeployment deployment)
         {
-            var endpoint = instance.Deployment.Endpoints.HttpsEndpoint ?? instance.Deployment.Endpoints.HttpEndpoint;
+            var endpoint = deployment.Endpoints.HttpsEndpoint ?? deployment.Endpoints.HttpEndpoint;
             var uriBuilder = new UriBuilder(endpoint);
             if (uriBuilder.Path.EndsWith("/"))
                 uriBuilder.Path += "db/data/";
@@ -32,9 +32,9 @@ namespace Neo4jManager
             }
         }
 
-        public static async Task WaitForReady(this INeo4jInstance instance, CancellationToken token)
+        public static async Task WaitForReady(this INeo4jDeployment deployment, CancellationToken token)
         {
-            if (instance == null) return;
+            if (deployment == null) return;
 
             Console.WriteLine("Waiting for Neo4j...");
 
@@ -43,7 +43,7 @@ namespace Neo4jManager
                 if (token.IsCancellationRequested)
                     token.ThrowIfCancellationRequested();
 
-                var ready = await instance.IsReady();
+                var ready = await deployment.IsReady();
                 if (ready)
                 {
                     Console.WriteLine("Neo4j is up");
