@@ -12,7 +12,7 @@ namespace Neo4jManager
         Task Stop(CancellationToken token);
         Task Restart(CancellationToken token);
         Task Clear(CancellationToken token);
-        Task Backup(CancellationToken token, string destinationPath, bool stopInstanceBeforeBackup = true);
+        Task Backup(CancellationToken token);
         Task Restore(CancellationToken token, string sourcePath);
         void Configure(string configFile, string key, string value);
         void DownloadPlugin(string pluginUrl);

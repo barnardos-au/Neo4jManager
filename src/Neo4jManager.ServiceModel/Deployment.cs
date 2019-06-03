@@ -10,5 +10,6 @@ namespace Neo4jManager.ServiceModel
         public Version Version { get; set; }
         public string Status { get; set; }
         public DateTime? ExpiresOn { get; set; }
+        public string BackupName { get; set; }
     }
 }

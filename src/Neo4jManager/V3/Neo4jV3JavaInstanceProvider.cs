@@ -114,29 +114,25 @@ namespace Neo4jManager.V3
             await StopWhile(token, () => Directory.Delete(dataPath, true));
         }
 
-        public async Task Backup(CancellationToken token, string destinationPath, bool stopInstanceBeforeBackup = true)
+        public async Task Backup(CancellationToken token)
         {
-            var dataPath = GetDataPath();
-
-            if (stopInstanceBeforeBackup)
-            {
-                await StopWhile(token, () =>
-                {
-                    var arguments = GetDumpArguments(destinationPath);
-                    using (var dumpProcess = GetProcess(arguments))
-                    {
-                        dumpProcess.StartInfo.WorkingDirectory = request.Neo4jFolder;
+            var destinationPath = Path.Combine(request.Neo4jFolder, $@"backup\{DateTime.UtcNow:ddMMyyyy}.dump");
+            var info = new FileInfo(destinationPath);
+            Directory.CreateDirectory(info.DirectoryName);
             
-                        dumpProcess.Start();
-                        dumpProcess.WaitForExit();
-                    }
-                });
-            }
-            else
+            await StopWhile(token, () =>
             {
-                await Task.Run(
-                    () => fileCopy.MirrorFolders(dataPath, destinationPath), token);
-            }
+                var arguments = GetDumpArguments(destinationPath);
+                using (var dumpProcess = GetProcess(arguments))
+                {
+                    dumpProcess.StartInfo.WorkingDirectory = request.Neo4jFolder;
+            
+                    dumpProcess.Start();
+                    dumpProcess.WaitForExit();
+                }
+            });
+
+            deployment.LastBackupPath = destinationPath;
         }
 
         public async Task Restore(CancellationToken token, string sourcePath)

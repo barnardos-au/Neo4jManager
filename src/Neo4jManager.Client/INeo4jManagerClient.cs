@@ -30,8 +30,8 @@ namespace Neo4jManager.Client
         Task RestartAsync(string id);
         void Clear(string id);
         Task ClearAsync(string id);
-        void Backup(string id, string destinationPath, bool stopInstanceBeforeBackup);
-        Task BackupAsync(string id, string destinationPath, bool stopInstanceBeforeBackup = true);
+        void Backup(string id);
+        Task BackupAsync(string id);
         void Restore(string id, string sourcePath);
         Task RestoreAsync(string id, string sourcePath);
 		void Configure(string id, string configFile, string key, string value);

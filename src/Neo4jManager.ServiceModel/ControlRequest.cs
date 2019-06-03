@@ -8,10 +8,6 @@ namespace Neo4jManager.ServiceModel
         public string Id { get; set; }
         public Operation Operation { get; set; }
 
-        // Backup
-        public string DestinationPath { get; set; }
-        public bool StopInstanceBeforeBackup { get; set; } = true;
-
         // Restore
         public string SourcePath { get; set; }
         

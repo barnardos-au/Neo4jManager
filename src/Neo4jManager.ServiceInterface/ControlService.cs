@@ -44,9 +44,7 @@ namespace Neo4jManager.ServiceInterface
                     
                     case Operation.Backup:
                         await keyedInstance.Value.Backup(
-                            cancellableRequest.Token,
-                            request.DestinationPath,
-                            request.StopInstanceBeforeBackup);
+                            cancellableRequest.Token);
                         break;
 
                     case Operation.Restore:

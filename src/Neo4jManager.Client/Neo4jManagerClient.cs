@@ -170,24 +170,20 @@ namespace Neo4jManager.Client
             });
         }
 
-        public void Backup(string id, string destinationPath, bool stopInstanceBeforeBackup = true)
+        public void Backup(string id)
         {
             client.Post(new ControlRequest
             {
                 Id = id,
-                DestinationPath = destinationPath,
-                StopInstanceBeforeBackup = stopInstanceBeforeBackup,
                 Operation = Operation.Backup
             });
         }
 
-        public async Task BackupAsync(string id, string destinationPath, bool stopInstanceBeforeBackup = true)
+        public async Task BackupAsync(string id)
         {
             await client.PostAsync(new ControlRequest
             {
                 Id = id,
-                DestinationPath = destinationPath,
-                StopInstanceBeforeBackup = stopInstanceBeforeBackup,
                 Operation = Operation.Backup
             });
         }

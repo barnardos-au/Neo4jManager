@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Management;
 using Neo4jManager.ServiceModel;
 using ServiceStack;
@@ -56,6 +57,7 @@ namespace Neo4jManager.ServiceInterface
                 var deployment = neo4JDeployment.ConvertTo<Deployment>();
                 deployment.Id = kvp.Key;
                 deployment.Status = kvp.Value.Status.ToString();
+                deployment.BackupName = Path.GetFileName(neo4JDeployment.LastBackupPath);
 
                 return deployment;
             });
