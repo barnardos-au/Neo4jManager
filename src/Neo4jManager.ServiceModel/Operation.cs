@@ -6,8 +6,6 @@
         Stop,
         Restart,
         Clear,
-        Backup,
-        Restore,
         Configure
     }
 }

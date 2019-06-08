@@ -8,6 +8,7 @@ namespace Neo4jManager
         public Neo4jEndpoints Endpoints { get; set; }
         public string DataPath { get; set; }
         public DateTime? ExpiresOn { get; set; }
-        public string LastBackupPath { get; set; }
+        public string BackupPath { get; set; }
+        public string LastBackupFile { get; set; }
     }
 }

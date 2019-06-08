@@ -1,9 +1,6 @@
 ﻿using ServiceStack;
-using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
-using ServiceStack.Configuration;
 
 namespace Neo4jManager.ServiceInterface
 {
@@ -11,14 +8,10 @@ namespace Neo4jManager.ServiceInterface
     public class DeploymentService : Service
     {
         private readonly INeo4jDeploymentsPool pool;
-        private readonly IAppSettings appSettings;
 
-        public DeploymentService(
-            INeo4jDeploymentsPool pool,
-            IAppSettings appSettings)
+        public DeploymentService(INeo4jDeploymentsPool pool)
         {
             this.pool = pool;
-            this.appSettings = appSettings;
         }
 
         // Get by Id
@@ -43,6 +36,26 @@ namespace Neo4jManager.ServiceInterface
             pool.Delete(request.Id);
 
             return keyedInstance.ConvertTo<DeploymentResponse>();
+        }
+        
+        // Get All
+        public DeploymentsResponse Get(DeploymentsRequest request)
+        {
+            var response = new DeploymentsResponse
+            {
+                Deployments = pool.Select(kvp => kvp.ConvertTo<Deployment>())
+            };
+
+            return response;
+        }
+        
+        // Delete All
+        public DeploymentsResponse Delete(DeploymentsRequest request)
+        {
+            pool.DeleteAll();
+            Helper.KillJavaProcesses();
+
+            return new DeploymentsResponse();
         }
     }
 }

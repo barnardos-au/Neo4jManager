@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Funq;
@@ -10,8 +12,9 @@ using Neo4jManager.ServiceInterface;
 using Neo4jManager.ServiceModel;
 using Neo4jManager.V3;
 using ServiceStack;
-using ServiceStack.Api.Swagger;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Configuration;
+using Version = Neo4jManager.ServiceModel.Version;
 
 namespace Neo4jManager.Host
 {
@@ -78,7 +81,15 @@ namespace Neo4jManager.Host
         private void ConfigurePlugins()
         {
             Plugins.Add(new CancellableRequestsFeature());
-            Plugins.Add(new SwaggerFeature());
+            Plugins.Add(new OpenApiFeature
+            {
+                OperationFilter = (s, operation) =>
+                {
+                    if (operation.RequestType != typeof(BackupRequest).Name) return;
+
+                    operation.Produces = new[] {"application/octet-stream"}.ToList();
+                }
+            });
             Plugins.Add(new CorsFeature());
         }
     }

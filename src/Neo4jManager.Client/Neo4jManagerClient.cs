@@ -1,15 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
 using ServiceStack;
+using Version = Neo4jManager.ServiceModel.Version;
 
 namespace Neo4jManager.Client
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jManagerClient : INeo4jManagerClient
     {
-        private readonly IServiceClient client;
+        private readonly JsonServiceClient client;
         
         public Neo4jManagerClient(string baseUrl)
         {
@@ -170,42 +173,38 @@ namespace Neo4jManager.Client
             });
         }
 
-        public void Backup(string id)
+        public Stream Backup(string id)
         {
-            client.Post(new ControlRequest
+            return client.Post(new BackupRequest
             {
-                Id = id,
-                Operation = Operation.Backup
+                Id = id
             });
         }
 
-        public async Task BackupAsync(string id)
+        public async Task<Stream> BackupAsync(string id)
         {
-            await client.PostAsync(new ControlRequest
+            return await client.PostAsync(new BackupRequest
             {
-                Id = id,
-                Operation = Operation.Backup
+                Id = id
             });
         }
 
-        public void Restore(string id, string sourcePath)
+        public DeploymentResponse Restore(string id, Stream fileStream)
         {
-            client.Post(new ControlRequest
-            {
-                Id = id,
-                SourcePath = sourcePath,
-                Operation = Operation.Restore
-            });
+            return client.PostFile<DeploymentResponse>(
+                $@"/deployment/{id}/Restore", 
+                fileStream,  
+                GetTimeStampDumpFileName(), 
+                "application/octet-stream");
         }
 
-        public async Task RestoreAsync(string id, string sourcePath)
+        public async Task<DeploymentResponse> RestoreAsync(string id, Stream fileStream)
         {
-            await client.PostAsync(new ControlRequest
-            {
-                Id = id,
-                SourcePath = sourcePath,
-                Operation = Operation.Restore
-            });
+            return await Task.FromResult(client.PostFile<DeploymentResponse>(
+                $@"/deployment/{id}/Restore", 
+                fileStream,  
+                GetTimeStampDumpFileName(), 
+                "application/octet-stream"));
         }
 
         public void Configure(string id, string configFile, string key, string value)
@@ -237,5 +236,7 @@ namespace Neo4jManager.Client
                 Operation = Operation.Configure
             });
         }
+
+        private static string GetTimeStampDumpFileName() => $"{DateTime.UtcNow:yyyyMMddHHmmss}.dump";
     }
 }

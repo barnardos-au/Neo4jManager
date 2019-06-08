@@ -2,7 +2,7 @@ using ServiceStack;
 
 namespace Neo4jManager.ServiceModel
 {
-    [Route("/deployment/{Id}/{Operation}")]
+    [Route("/deployment/{Id}/{Operation}", "POST")]
     public class ControlRequest : IReturn<DeploymentResponse>
     {
         public string Id { get; set; }

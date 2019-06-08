@@ -2,7 +2,7 @@
 
 namespace Neo4jManager.ServiceModel
 {
-    [Route("/versions")]
+    [Route("/versions", "GET")]
     public class VersionsRequest : IReturn<VersionsResponse>
     {
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Autofac;
 using Funq;
@@ -150,14 +151,15 @@ namespace Neo4jManager.Tests
             });
 
             Assert.IsNotNull(deploymentResponse);
-            
-            var backupRespose = await client.PostAsync(new ControlRequest
+
+            using (var backupResponse = await client.PostAsync(new BackupRequest
             {
-                Id = deploymentResponse.Deployment.Id,
-                Operation = Operation.Backup,
-            });
-            
-            Assert.IsNotNull(backupRespose);
+                Id = deploymentResponse.Deployment.Id
+            }))
+            {
+                var bytes = backupResponse.ToBytes();
+                Assert.Greater(bytes.Length, 0);
+            }
         }
     }
 }

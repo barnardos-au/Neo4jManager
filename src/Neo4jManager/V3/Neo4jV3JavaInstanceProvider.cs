@@ -21,17 +21,15 @@ namespace Neo4jManager.V3
         private const int defaultWaitForKill = 10000;
 
         private readonly IJavaResolver javaResolver;
-        private readonly IFileCopy fileCopy;
         private readonly Neo4jDeploymentRequest request;
         private readonly Dictionary<string, ConfigEditor> configEditors;
         private readonly Neo4jDeployment deployment;
 
         private Process process;
 
-        public Neo4jV3JavaInstanceProvider(IJavaResolver javaResolver, IFileCopy fileCopy, Neo4jDeploymentRequest request)
+        public Neo4jV3JavaInstanceProvider(IJavaResolver javaResolver, Neo4jDeploymentRequest request)
         {
             this.javaResolver = javaResolver;
-            this.fileCopy = fileCopy;
             this.request = request;
 
             var neo4JConfigFolder = Path.Combine(request.Neo4jFolder, "conf");
@@ -51,12 +49,15 @@ namespace Neo4jManager.V3
                 Version = request.Version,
                 ExpiresOn = request.LeasePeriod == null
                     ? (DateTime?) null
-                    : DateTime.UtcNow.Add(request.LeasePeriod.Value)
+                    : DateTime.UtcNow.Add(request.LeasePeriod.Value),
+                BackupPath = Path.Combine(request.Neo4jFolder, "backup")
             };
         }
 
         public async Task Start(CancellationToken token)
         {
+            Status = Status.Starting;
+
             if (process == null)
             {
                 process = GetProcess(GetNeo4jStartArguments());
@@ -111,18 +112,48 @@ namespace Neo4jManager.V3
         {
             var dataPath = GetDataPath();
 
-            await StopWhile(token, () => Directory.Delete(dataPath, true));
+            await StopWhile(token, () =>
+            {
+                Status = Status.Clearing;
+
+                Directory.Delete(dataPath, true);
+            });
         }
 
         public async Task Backup(CancellationToken token)
         {
-            var destinationPath = Path.Combine(request.Neo4jFolder, $@"backup\{DateTime.UtcNow:ddMMyyyy}.dump");
-            var info = new FileInfo(destinationPath);
-            Directory.CreateDirectory(info.DirectoryName);
+            var destinationPath = Path.Combine(deployment.BackupPath, $"{DateTime.UtcNow:yyyyMMddHHmmss}.dump");
             
+            var info = new FileInfo(destinationPath);
+            if (!string.IsNullOrEmpty(info.DirectoryName))
+            {
+                Directory.CreateDirectory(info.DirectoryName);
+            
+                await StopWhile(token, () =>
+                {
+                    Status = Status.Backup;
+
+                    var arguments = GetDumpArguments(destinationPath);
+                    using (var dumpProcess = GetProcess(arguments))
+                    {
+                        dumpProcess.StartInfo.WorkingDirectory = request.Neo4jFolder;
+            
+                        dumpProcess.Start();
+                        dumpProcess.WaitForExit();
+                    }
+                });
+
+                deployment.LastBackupFile = destinationPath;
+            }
+        }
+
+        public async Task Restore(CancellationToken token, string sourcePath)
+        {
             await StopWhile(token, () =>
             {
-                var arguments = GetDumpArguments(destinationPath);
+                Status = Status.Restore;
+
+                var arguments = GetLoadArguments(sourcePath);
                 using (var dumpProcess = GetProcess(arguments))
                 {
                     dumpProcess.StartInfo.WorkingDirectory = request.Neo4jFolder;
@@ -131,15 +162,6 @@ namespace Neo4jManager.V3
                     dumpProcess.WaitForExit();
                 }
             });
-
-            deployment.LastBackupPath = destinationPath;
-        }
-
-        public async Task Restore(CancellationToken token, string sourcePath)
-        {
-            var dataPath = GetDataPath();
-
-            await StopWhile(token, () => fileCopy.MirrorFolders(sourcePath, dataPath));
         }
 
         public INeo4jDeployment Deployment => deployment;
@@ -156,9 +178,20 @@ namespace Neo4jManager.V3
 
         private async Task StopWhile(CancellationToken token, Action action)
         {
+            var wasRunning = Status == Status.Started || Status == Status.Starting;
+            
             await Stop(token);
+
             await Task.Run(action, token);
-            await Start(token);
+
+            if (wasRunning)
+            {
+                await Start(token);
+            }
+            else
+            {
+                Status = Status.Stopped;
+            }
         }
 
         private Process GetProcess(string arguments)
@@ -196,6 +229,32 @@ namespace Neo4jManager.V3
                 .Append(quotes)
                 .Append(destinationPath)
                 .Append(quotes);
+
+            return builder.ToString();
+        }
+
+        private string GetLoadArguments(string sourcePath)
+        {
+            var javaToolsPath = javaResolver.GetToolsPath();
+            var builder = new StringBuilder();
+
+            builder
+                .Append(" -XX:+UseParallelGC")
+                .Append(" -classpath ")
+                .Append(quotes)
+                .Append($";{request.Neo4jFolder}/lib/*;{request.Neo4jFolder}/bin/*;{javaToolsPath}")
+                .Append(quotes)
+                .Append(" -Dbasedir=")
+                .Append(quotes)
+                .Append(request.Neo4jFolder)
+                .Append(quotes)
+                .Append(" org.neo4j.commandline.admin.AdminTool load")
+                .Append(" --database=graph.db")
+                .Append(" --from=")
+                .Append(quotes)
+                .Append(sourcePath)
+                .Append(quotes)
+                .Append(" --force");
 
             return builder.ToString();
         }
@@ -263,5 +322,4 @@ namespace Neo4jManager.V3
             return Path.Combine(request.Neo4jFolder, dataDirectory, activeDatabase);
         }
     }
-    
 }

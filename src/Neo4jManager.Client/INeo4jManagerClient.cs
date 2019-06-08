@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
 
@@ -30,10 +31,10 @@ namespace Neo4jManager.Client
         Task RestartAsync(string id);
         void Clear(string id);
         Task ClearAsync(string id);
-        void Backup(string id);
-        Task BackupAsync(string id);
-        void Restore(string id, string sourcePath);
-        Task RestoreAsync(string id, string sourcePath);
+        Stream Backup(string id);
+        Task<Stream> BackupAsync(string id);
+        DeploymentResponse Restore(string id, Stream fileStream);
+        Task<DeploymentResponse> RestoreAsync(string id, Stream fileStream);
 		void Configure(string id, string configFile, string key, string value);
 		Task ConfigureAsync(string id, string configFile, string key, string value);
     }

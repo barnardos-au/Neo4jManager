@@ -42,17 +42,6 @@ namespace Neo4jManager.ServiceInterface
                         await keyedInstance.Value.Clear(cancellableRequest.Token);
                         break;
                     
-                    case Operation.Backup:
-                        await keyedInstance.Value.Backup(
-                            cancellableRequest.Token);
-                        break;
-
-                    case Operation.Restore:
-                        await keyedInstance.Value.Restore(
-                            cancellableRequest.Token,
-                            request.SourcePath);
-                        break;
-
                     case Operation.Configure:
                         keyedInstance.Value.Configure(
                             request.Setting.ConfigFile,
