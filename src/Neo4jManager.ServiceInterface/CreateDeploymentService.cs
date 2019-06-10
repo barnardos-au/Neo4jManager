@@ -1,6 +1,8 @@
 ﻿using ServiceStack;
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
 using ServiceStack.Configuration;
@@ -59,14 +61,20 @@ namespace Neo4jManager.ServiceInterface
                 instance.Configure(s.ConfigFile, s.Key, s.Value);
             });
 
-            using (var cancellableRequest = Request.CreateCancellableRequest())
+            if (!string.IsNullOrEmpty(request.RestoreDumpFileUrl))
             {
-                if (request.AutoStart)
-                {
-                    await instance.Start(cancellableRequest.Token);
-                }
+                var tempFile = await Neo4jManager.Helper.DownloadFileAsync(
+                    request.RestoreDumpFileUrl, 
+                    Path.GetTempPath());
+
+                await instance.Restore(CancellationToken.None, tempFile);
             }
-           
+        
+            if (request.AutoStart)
+            {
+                await instance.Start(CancellationToken.None);
+            }
+            
             var keyedInstance = pool.SingleOrDefault(p => p.Key == id);
             
             return keyedInstance.ConvertTo<DeploymentResponse>();

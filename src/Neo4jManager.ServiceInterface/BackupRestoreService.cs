@@ -49,30 +49,44 @@ namespace Neo4jManager.ServiceInterface
                 throw HttpError.NotFound($"Deployment {request.Id} not found");
 
             var keyedInstance = pool.Single(p => p.Key == request.Id);
+            var instance = keyedInstance.Value;
 
-            var file = Request.Files.FirstOrDefault();
-            if (file == null)
-                throw HttpError.NotFound($"Upload file not found");
-            
-            var restorePath = Path.Combine(
-                keyedInstance.Value.Deployment.BackupPath, 
-                file.FileName);
-
-            var restoreBasePath = Path.GetDirectoryName(restorePath);
-            if (!Directory.Exists(restoreBasePath))
+            if (!Directory.Exists(instance.Deployment.BackupPath))
             {
-                log.Debug($"Creating folder {restoreBasePath}");
+                log.Debug($"Creating folder {instance.Deployment.BackupPath}");
                 try
                 {
-                    Directory.CreateDirectory(restoreBasePath);
+                    Directory.CreateDirectory(instance.Deployment.BackupPath);
                 }
                 catch (Exception e)
                 {
                     log.Error(e);
                 }
             }
+            
+            string restorePath;
+            
+            if (string.IsNullOrEmpty(request.RestoreUrl))
+            {
+                var file = Request.Files.FirstOrDefault();
+                if (file == null)
+                    throw HttpError.NotFound($"Upload file not found");
+                
+                restorePath = Path.Combine(
+                    keyedInstance.Value.Deployment.BackupPath, 
+                    file.FileName);
 
-            file.SaveTo(restorePath);
+                file.SaveTo(restorePath);
+            }
+            else
+            {
+                restorePath = Path.Combine(
+                    keyedInstance.Value.Deployment.BackupPath,
+                    Neo4jManager.Helper.GetTimeStampDumpFileName());
+
+                var bytes = await request.RestoreUrl.GetBytesFromUrlAsync();
+                File.WriteAllBytes(restorePath, bytes);
+            }
 
             using (var cancellableRequest = Request.CreateCancellableRequest())
             {

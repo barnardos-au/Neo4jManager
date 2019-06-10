@@ -27,8 +27,10 @@ namespace Neo4jManager.Host
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
+            appLifetime.ApplicationStopped.Register(OnStopped);
+            
             app.UseServiceStack(new AppHost(env));
 
             app.Run(context =>
@@ -37,9 +39,14 @@ namespace Neo4jManager.Host
                 return Task.FromResult(0);
             });
         }
+
+        private void OnStopped()
+        {
+            Neo4jManager.ServiceInterface.Helper.KillJavaProcesses();
+        }
     }
     
-   public class AppHost : AppHostBase
+    public class AppHost : AppHostBase
     {
         public AppHost(IHostingEnvironment hostingEnvironment) : base("Neo4jManager", typeof(DeploymentService).Assembly)
         {
@@ -120,6 +127,12 @@ namespace Neo4jManager.Host
             {
                 logger.Error(e);
             }
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            var pool = Container.Resolve<INeo4jDeploymentsPool>();
+            pool.DeleteAll(true);
         }
     }
 }

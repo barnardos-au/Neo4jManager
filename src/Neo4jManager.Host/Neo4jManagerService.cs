@@ -21,6 +21,7 @@ namespace Neo4jManager.Host
         public bool Stop(HostControl hostControl)
         {
             webHost.StopAsync().Wait();
+            webHost.Dispose();
             return true;
         }
         

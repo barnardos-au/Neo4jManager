@@ -122,7 +122,7 @@ namespace Neo4jManager.V3
 
         public async Task Backup(CancellationToken token)
         {
-            var destinationPath = Path.Combine(deployment.BackupPath, $"{DateTime.UtcNow:yyyyMMddHHmmss}.dump");
+            var destinationPath = Path.Combine(deployment.BackupPath, Helper.GetTimeStampDumpFileName());
             
             var info = new FileInfo(destinationPath);
             if (!string.IsNullOrEmpty(info.DirectoryName))

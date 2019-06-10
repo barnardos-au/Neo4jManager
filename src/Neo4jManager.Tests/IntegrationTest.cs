@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Autofac;
 using Funq;
+using Neo4j.Driver.V1;
 using Neo4jManager.ServiceInterface;
 using Neo4jManager.ServiceModel;
 using Neo4jManager.V3;
@@ -64,9 +65,15 @@ namespace Neo4jManager.Tests
                 IContainerAdapter adapter = new AutofacIocAdapter(builder.Build());
                 container.Adapter = adapter;
                 
-                LogManager.LogFactory = new ConsoleLogFactory(debugEnabled:true); 
+                LogManager.LogFactory = new ConsoleLogFactory(); 
 
                 Plugins.Add(new CancellableRequestsFeature());
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                var pool = Container.Resolve<INeo4jDeploymentsPool>();
+                pool.DeleteAll(true);
             }
         }
 
@@ -145,6 +152,8 @@ namespace Neo4jManager.Tests
             deployment = controlResponse.Deployment;
             Assert.IsNotNull(deployment);
             Assert.AreEqual("Stopped", deployment.Status);
+
+            await DeleteDeployment(deployment.Id);
         }
         
         [Test]
@@ -157,14 +166,18 @@ namespace Neo4jManager.Tests
 
             Assert.IsNotNull(deploymentResponse);
 
+            var deployment = deploymentResponse.Deployment;
+
             using (var backupResponse = await client.PostAsync(new BackupRequest
             {
-                Id = deploymentResponse.Deployment.Id
+                Id = deployment.Id
             }))
             {
                 var bytes = backupResponse.ToBytes();
                 Assert.Greater(bytes.Length, 0);
             }
+            
+            await DeleteDeployment(deployment.Id);
         }
         
         [Test]
@@ -179,7 +192,8 @@ namespace Neo4jManager.Tests
 
             var deployment = deploymentResponse.Deployment;
 
-            var dumpFileInfo = new FileInfo(@"C:\code\barnardos-au\Neo4jManager\src\Neo4jManager.Tests\dbbackup.dump");
+            var dumpFile = Path.Combine(AppContext.BaseDirectory, "dbbackup.dump"); 
+            var dumpFileInfo = new FileInfo(dumpFile);
             var restoreResponse = client.PostFile<DeploymentResponse>(
                 $@"/deployment/{deployment.Id}/Restore", 
                 dumpFileInfo, 
@@ -194,6 +208,28 @@ namespace Neo4jManager.Tests
             });
 
             Assert.IsNotNull(controlResponse);
+            
+            using (var driver = GraphDatabase.Driver(deployment.Endpoints.BoltEndpoint))
+            {
+                using(var session = driver.Session())
+                {
+                    var result = await session.RunAsync("MATCH (p:Person) RETURN p.FirstName as FirstName, p.LastName AS LastName");
+                    var record = await result.SingleAsync();
+                    
+                    Assert.AreEqual("Foo", record["FirstName"].As<string>());
+                    Assert.AreEqual("Bar", record["LastName"].As<string>());
+                }
+            }
+            
+            await DeleteDeployment(deployment.Id);
+        }
+
+        private async Task DeleteDeployment(string id)
+        {
+            await client.DeleteAsync(new DeploymentRequest
+            {
+                Id = id
+            });
         }
     }
 }
