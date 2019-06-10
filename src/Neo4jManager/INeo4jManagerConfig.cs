@@ -6,6 +6,7 @@ namespace Neo4jManager
     public interface INeo4jManagerConfig
     {
         string Neo4jBasePath { get; set; }
+        string DeploymentsBasePath { get; }
         long StartHttpPort { get; set; }
         long StartHttpsPort { get; set; }
         long StartBoltPort { get; set; }

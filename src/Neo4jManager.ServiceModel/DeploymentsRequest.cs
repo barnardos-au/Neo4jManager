@@ -2,10 +2,9 @@
 
 namespace Neo4jManager.ServiceModel
 {
-//    [Route("/")]
-    [Route("/deployments", "DELETE")]
-    [Route("/deployments/all", "DELETE")]
+    [Route("/deployments", "GET,DELETE")]
     public class DeploymentsRequest : IReturn<DeploymentsResponse>
     {
+        public bool Permanent { get; set; } 
     }
 }

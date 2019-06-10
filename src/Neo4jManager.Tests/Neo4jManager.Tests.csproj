@@ -19,4 +19,10 @@
     <PackageReference Include="ServiceStack.Kestrel" Version="5.*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="dbbackup.dump">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

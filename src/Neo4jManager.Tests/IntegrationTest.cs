@@ -10,6 +10,7 @@ using Neo4jManager.V3;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Configuration;
+using ServiceStack.Logging;
 using Version = Neo4jManager.ServiceModel.Version;
 
 namespace Neo4jManager.Tests
@@ -18,6 +19,7 @@ namespace Neo4jManager.Tests
     {
         const string BaseUri = "http://localhost:2000/";
         private readonly ServiceStackHost appHost;
+        private IServiceClient client;
 
         class TestAppHost : AppSelfHostBase
         {
@@ -57,10 +59,13 @@ namespace Neo4jManager.Tests
                 builder.RegisterType<Neo4jInstanceFactory>().AsImplementedInterfaces();
                 builder.RegisterType<Neo4jV3JavaInstanceProvider>().AsImplementedInterfaces().AsSelf();
                 builder.RegisterType<Neo4jDeploymentsPool>().AsImplementedInterfaces().SingleInstance();
+                builder.Register(ctx => LogManager.LogFactory.GetLogger(typeof(IService))).AsImplementedInterfaces();
             
                 IContainerAdapter adapter = new AutofacIocAdapter(builder.Build());
                 container.Adapter = adapter;
                 
+                LogManager.LogFactory = new ConsoleLogFactory(debugEnabled:true); 
+
                 Plugins.Add(new CancellableRequestsFeature());
             }
         }
@@ -80,13 +85,15 @@ namespace Neo4jManager.Tests
             appHost.Dispose();
         }
 
-        public IServiceClient CreateClient() => new JsonServiceClient(BaseUri);
+        [SetUp]
+        public void Setup()
+        {
+            client = new JsonServiceClient(BaseUri);
+        }
 
         [Test]
-        public async Task Can_Install_And_Start_Neo4j()
+        public async Task Can_Install_And_Start()
         {
-            var client = CreateClient();
-
             var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
             {
                 Version = "3.5.3",
@@ -141,10 +148,8 @@ namespace Neo4jManager.Tests
         }
         
         [Test]
-        public async Task Backup_Neo4j()
+        public async Task Can_Backup()
         {
-            var client = CreateClient();
-
             var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
             {
                 Version = "3.5.3"
@@ -160,6 +165,35 @@ namespace Neo4jManager.Tests
                 var bytes = backupResponse.ToBytes();
                 Assert.Greater(bytes.Length, 0);
             }
+        }
+        
+        [Test]
+        public async Task Can_Restore()
+        {
+            var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
+            {
+                Version = "3.5.3"
+            });
+
+            Assert.IsNotNull(deploymentResponse);
+
+            var deployment = deploymentResponse.Deployment;
+
+            var dumpFileInfo = new FileInfo(@"C:\code\barnardos-au\Neo4jManager\src\Neo4jManager.Tests\dbbackup.dump");
+            var restoreResponse = client.PostFile<DeploymentResponse>(
+                $@"/deployment/{deployment.Id}/Restore", 
+                dumpFileInfo, 
+                "application/octet-stream");
+            
+            Assert.IsNotNull(restoreResponse);
+                
+            var controlResponse = await client.PostAsync(new ControlRequest
+            {
+                Id = deployment.Id,
+                Operation = Operation.Start
+            });
+
+            Assert.IsNotNull(controlResponse);
         }
     }
 }

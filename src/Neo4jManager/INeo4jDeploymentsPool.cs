@@ -8,7 +8,7 @@ namespace Neo4jManager
     public interface INeo4jDeploymentsPool : IDictionary<string, INeo4jInstance>, IDisposable
     {
         string Create(Neo4jDeploymentRequest request);
-        void Delete(string id);
-        void DeleteAll();
+        void Delete(string id, bool permanent);
+        void DeleteAll(bool permanent);
     }
 }

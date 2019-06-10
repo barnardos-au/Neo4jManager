@@ -1,18 +1,22 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
 using ServiceStack;
+using ServiceStack.Logging;
 
 namespace Neo4jManager.ServiceInterface
 {
     public class BackupRestoreService : Service
     {
         private readonly INeo4jDeploymentsPool pool;
+        private readonly ILog log;
 
-        public BackupRestoreService(INeo4jDeploymentsPool pool)
+        public BackupRestoreService(INeo4jDeploymentsPool pool, ILog log)
         {
             this.pool = pool;
+            this.log = log;
         }
 
         // Backup & download (dump file)
@@ -39,7 +43,7 @@ namespace Neo4jManager.ServiceInterface
         }
         
         // Upload & restore (dump file)
-        public async Task Post(RestoreRequest request)
+        public async Task<DeploymentResponse> Post(RestoreRequest request)
         {
             if (!pool.ContainsKey(request.Id))
                 throw HttpError.NotFound($"Deployment {request.Id} not found");
@@ -54,6 +58,20 @@ namespace Neo4jManager.ServiceInterface
                 keyedInstance.Value.Deployment.BackupPath, 
                 file.FileName);
 
+            var restoreBasePath = Path.GetDirectoryName(restorePath);
+            if (!Directory.Exists(restoreBasePath))
+            {
+                log.Debug($"Creating folder {restoreBasePath}");
+                try
+                {
+                    Directory.CreateDirectory(restoreBasePath);
+                }
+                catch (Exception e)
+                {
+                    log.Error(e);
+                }
+            }
+
             file.SaveTo(restorePath);
 
             using (var cancellableRequest = Request.CreateCancellableRequest())
@@ -62,6 +80,8 @@ namespace Neo4jManager.ServiceInterface
                     cancellableRequest.Token,
                     restorePath);
             }
+            
+            return keyedInstance.ConvertTo<DeploymentResponse>();
         }
     }
 }

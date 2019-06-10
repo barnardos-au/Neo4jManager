@@ -33,7 +33,7 @@ namespace Neo4jManager.ServiceInterface
 
             var keyedInstance = pool.Single(p => p.Key == request.Id);
             
-            pool.Delete(request.Id);
+            pool.Delete(request.Id, request.Permanent);
 
             return keyedInstance.ConvertTo<DeploymentResponse>();
         }
@@ -52,7 +52,7 @@ namespace Neo4jManager.ServiceInterface
         // Delete All
         public DeploymentsResponse Delete(DeploymentsRequest request)
         {
-            pool.DeleteAll();
+            pool.DeleteAll(request.Permanent);
             Helper.KillJavaProcesses();
 
             return new DeploymentsResponse();

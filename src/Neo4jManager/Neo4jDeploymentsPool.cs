@@ -32,7 +32,7 @@ namespace Neo4jManager
             var deploymentFolderName = Helper.GenerateValidFolderName(id);
             if (string.IsNullOrEmpty(deploymentFolderName)) throw new ArgumentException("Error creating folder with given Id");
 
-            var targetDeploymentPath = Path.Combine(neo4JManagerConfig.Neo4jBasePath, deploymentFolderName);
+            var targetDeploymentPath = Path.Combine(neo4JManagerConfig.DeploymentsBasePath, deploymentFolderName);
             Helper.SafeDelete(targetDeploymentPath);
             Helper.CopyDeployment(request.Version, neo4JManagerConfig.Neo4jBasePath, targetDeploymentPath);
 
@@ -55,27 +55,31 @@ namespace Neo4jManager
             }
         }
 
-        public void Delete(string id)
+        public void Delete(string id, bool permanent)
         {
             var instance = this[id];
             instance.Dispose();
 
+            if (!permanent) return;
+            
             TryRemove(id, out instance);
         }
 
-        public void DeleteAll()
+        public void DeleteAll(bool permanent)
         {
             foreach (var instance in Values)
             {
                 instance.Dispose();
             }
 
+            if (!permanent) return;
+            
             Clear();
         }
 
         public void Dispose()
         {
-            DeleteAll();
+            DeleteAll(true);
         }
     }
 }

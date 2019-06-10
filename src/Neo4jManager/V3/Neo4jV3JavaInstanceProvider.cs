@@ -141,6 +141,8 @@ namespace Neo4jManager.V3
                         dumpProcess.Start();
                         dumpProcess.WaitForExit();
                     }
+                    
+                    Status = Status.Stopped;
                 });
 
                 deployment.LastBackupFile = destinationPath;
@@ -161,6 +163,8 @@ namespace Neo4jManager.V3
                     dumpProcess.Start();
                     dumpProcess.WaitForExit();
                 }
+                
+                Status = Status.Stopped;
             });
         }
 

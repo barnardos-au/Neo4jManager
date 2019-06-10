@@ -6,5 +6,6 @@ namespace Neo4jManager.ServiceModel
     public class DeploymentRequest : IReturn<DeploymentResponse>
     {
         public string Id { get; set; }
+        public bool Permanent { get; set; } 
     }
 }

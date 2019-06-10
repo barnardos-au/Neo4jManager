@@ -14,6 +14,7 @@ using Neo4jManager.V3;
 using ServiceStack;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Configuration;
+using ServiceStack.Logging;
 using Version = Neo4jManager.ServiceModel.Version;
 
 namespace Neo4jManager.Host
@@ -42,7 +43,7 @@ namespace Neo4jManager.Host
     {
         public AppHost(IHostingEnvironment hostingEnvironment) : base("Neo4jManager", typeof(DeploymentService).Assembly)
         {
-            var versions = File.ReadAllText(Path.Combine(System.AppContext.BaseDirectory, "versions.json"))
+            var versions = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "versions.json"))
                 .FromJson<IEnumerable<Version>>()
                 .ToJsv();
 
@@ -70,11 +71,14 @@ namespace Neo4jManager.Host
             builder.RegisterType<Neo4jInstanceFactory>().AsImplementedInterfaces();
             builder.RegisterType<Neo4jV3JavaInstanceProvider>().AsImplementedInterfaces().AsSelf();
             builder.RegisterType<Neo4jDeploymentsPool>().AsImplementedInterfaces().SingleInstance();
+            builder.Register(ctx => LogManager.LogFactory.GetLogger(typeof(IService))).AsImplementedInterfaces();
             
             IContainerAdapter adapter = new AutofacIocAdapter(builder.Build());
             container.Adapter = adapter;
 
             ConfigurePlugins();
+            ConfigureLogger();
+            
             Neo4jManager.ServiceInterface.Helper.ConfigureMappers();
         }
 
@@ -91,6 +95,31 @@ namespace Neo4jManager.Host
                 }
             });
             Plugins.Add(new CorsFeature());
+        }
+
+        private void ConfigureLogger()
+        {
+            LogManager.LogFactory = new ConsoleLogFactory(debugEnabled:true); 
+        }
+
+        public override void OnAfterInit()
+        {
+            base.OnAfterInit();
+
+            var config = Container.Resolve<INeo4jManagerConfig>();
+            var logger = Container.Resolve<ILog>();
+            
+            try
+            {
+                if (!Directory.Exists(config.DeploymentsBasePath)) return;
+                
+                logger.Debug($"Clearing folder {config.DeploymentsBasePath}");
+                Directory.Delete(config.DeploymentsBasePath, true);
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+            }
         }
     }
 }
