@@ -1,103 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
-using Funq;
 using Neo4j.Driver.V1;
-using Neo4jManager.ServiceInterface;
 using Neo4jManager.ServiceModel;
-using Neo4jManager.V3;
 using NUnit.Framework;
 using ServiceStack;
-using ServiceStack.Configuration;
-using ServiceStack.Logging;
-using Version = Neo4jManager.ServiceModel.Version;
 
 namespace Neo4jManager.Tests
 {
-    public class IntegrationTest
+    [TestFixture]
+    public class IntegrationTest : IntegrationFixtureBase
     {
-        const string BaseUri = "http://localhost:2000/";
-        private readonly ServiceStackHost appHost;
         private IServiceClient client;
 
-        class TestAppHost : AppSelfHostBase
+        [OneTimeSetUp]
+        protected override void OneTimeSetUp()
         {
-            public TestAppHost() : base(nameof(IntegrationTest), typeof(DeploymentService).Assembly)
-            {
-                var versionsJsv = new List<Version>
-                {
-                    new Version
-                    {
-                        VersionNumber = "3.5.3",
-                        DownloadUrl = "https://neo4j.com/artifact.php?name=neo4j-community-3.5.3-windows.zip",
-                        ZipFileName = "neo4j-community-3.5.3-windows.zip",
-                        Architecture = "V3"
-                    }
-                }.ToJsv();
-                
-                AppSettings = new MultiAppSettingsBuilder()
-                    .AddDictionarySettings(new Dictionary<string, string>
-                    {
-                        { AppSettingsKeys.Versions, versionsJsv }
-                    })
-                    .Build();
-            }
-
-            public override void Configure(Container container)
-            {
-                var builder = new ContainerBuilder();
-
-                builder.RegisterType<FileCopy>().AsImplementedInterfaces();
-                builder.Register(ctx => new Neo4jManagerConfig
-                {
-                    Neo4jBasePath = @"c:\Neo4jManager",
-                    StartBoltPort = 7691,
-                    StartHttpPort = 7401
-                }).AsImplementedInterfaces();
-                builder.RegisterType<ZuluJavaResolver>().AsImplementedInterfaces();
-                builder.RegisterType<Neo4jInstanceFactory>().AsImplementedInterfaces();
-                builder.RegisterType<Neo4jV3JavaInstanceProvider>().AsImplementedInterfaces().AsSelf();
-                builder.RegisterType<Neo4jDeploymentsPool>().AsImplementedInterfaces().SingleInstance();
-                builder.Register(ctx => LogManager.LogFactory.GetLogger(typeof(IService))).AsImplementedInterfaces();
+            base.OneTimeSetUp();
             
-                IContainerAdapter adapter = new AutofacIocAdapter(builder.Build());
-                container.Adapter = adapter;
-                
-                LogManager.LogFactory = new ConsoleLogFactory(); 
-
-                Plugins.Add(new CancellableRequestsFeature());
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                var pool = Container.Resolve<INeo4jDeploymentsPool>();
-                pool.DeleteAll(true);
-            }
-        }
-
-        public IntegrationTest()
-        {
-            appHost = new TestAppHost()
-                .Init()
-                .Start(BaseUri);
-            
-            Neo4jManager.ServiceInterface.Helper.ConfigureMappers();
-        }
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-            appHost.Dispose();
-        }
-
-        [SetUp]
-        public void Setup()
-        {
             client = new JsonServiceClient(BaseUri);
         }
-
+      
         [Test]
         public async Task Can_Install_And_Start()
         {
@@ -161,7 +86,8 @@ namespace Neo4jManager.Tests
         {
             var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
             {
-                Version = "3.5.3"
+                Version = "3.5.3",
+                AutoStart = true
             });
 
             Assert.IsNotNull(deploymentResponse);
@@ -185,7 +111,8 @@ namespace Neo4jManager.Tests
         {
             var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
             {
-                Version = "3.5.3"
+                Version = "3.5.3",
+                AutoStart = true
             });
 
             Assert.IsNotNull(deploymentResponse);
@@ -208,8 +135,74 @@ namespace Neo4jManager.Tests
             });
 
             Assert.IsNotNull(controlResponse);
+
+            await AssertRestoredDatabase(deployment.Endpoints.BoltEndpoint);
             
-            using (var driver = GraphDatabase.Driver(deployment.Endpoints.BoltEndpoint))
+            await DeleteDeployment(deployment.Id);
+        }
+
+        [Test]
+        public async Task Can_Install_With_Specified_Dump_File_From_Url()
+        {
+            var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
+            {
+                Version = "3.5.3",
+                RestoreDumpFileUrl = Path.Combine(AppContext.BaseDirectory, "dbbackup.dump"),
+                AutoStart = true
+            });
+
+            Assert.IsNotNull(deploymentResponse);
+
+            var deployment = deploymentResponse.Deployment;
+
+            await AssertRestoredDatabase(deployment.Endpoints.BoltEndpoint);
+            
+            await DeleteDeployment(deployment.Id);
+        }
+        
+        [Test]
+        public async Task Can_Create_Concurrent_Deployments()
+        {
+            var request = new CreateDeploymentRequest
+            {
+                Version = "3.5.3",
+                AutoStart = true
+            };
+
+            var createTasks = new List<Task<DeploymentResponse>>();
+            for (var i = 0; i < 4; i++)
+            {
+                createTasks.Add(client.PostAsync(request));
+            }
+
+            await Task.WhenAll(createTasks);
+
+            var deployments = createTasks.Select(t => t.Result.Deployment).ToList();
+            foreach (var deployment in deployments)
+            {
+                Assert.AreEqual("Started", deployment.Status);
+            }
+
+            var distinctEndpoints = deployments.Select(d => d.Endpoints.HttpEndpoint).Distinct();
+            Assert.AreEqual(4, distinctEndpoints.Count());
+
+            foreach (var deployment in deployments)
+            {
+                await DeleteDeployment(deployment.Id);
+            }
+        }
+
+        private async Task DeleteDeployment(string id)
+        {
+            await client.DeleteAsync(new DeploymentRequest
+            {
+                Id = id
+            });
+        }
+
+        private async Task AssertRestoredDatabase(string boltEndpoint)
+        {
+            using (var driver = GraphDatabase.Driver(boltEndpoint))
             {
                 using(var session = driver.Session())
                 {
@@ -220,16 +213,6 @@ namespace Neo4jManager.Tests
                     Assert.AreEqual("Bar", record["LastName"].As<string>());
                 }
             }
-            
-            await DeleteDeployment(deployment.Id);
-        }
-
-        private async Task DeleteDeployment(string id)
-        {
-            await client.DeleteAsync(new DeploymentRequest
-            {
-                Id = id
-            });
         }
     }
 }

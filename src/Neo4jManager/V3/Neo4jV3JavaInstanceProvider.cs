@@ -79,7 +79,11 @@ namespace Neo4jManager.V3
         {
             Status = Status.Stopping;
 
-            if (process == null || process.HasExited) return;
+            if (process == null || process.HasExited)
+            {
+                Status = Status.Stopped;
+                return;
+            }
 
             if (Command.TryAttachToProcess(process.Id, out var command))
             {
@@ -178,6 +182,8 @@ namespace Neo4jManager.V3
             AsyncHelper.RunSync(() => Stop(CancellationToken.None));
 
             process?.Dispose();
+
+            Status = Status.Deleted;
         }
 
         private async Task StopWhile(CancellationToken token, Action action)

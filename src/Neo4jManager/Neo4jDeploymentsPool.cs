@@ -58,7 +58,10 @@ namespace Neo4jManager
         public void Delete(string id, bool permanent)
         {
             var instance = this[id];
-            instance.Dispose();
+            if (instance.Status != Status.Deleted)
+            {
+                instance.Dispose();
+            }
 
             if (!permanent) return;
             
@@ -67,7 +70,7 @@ namespace Neo4jManager
 
         public void DeleteAll(bool permanent)
         {
-            foreach (var instance in Values)
+            foreach (var instance in Values.Where(i => i.Status != Status.Deleted))
             {
                 instance.Dispose();
             }

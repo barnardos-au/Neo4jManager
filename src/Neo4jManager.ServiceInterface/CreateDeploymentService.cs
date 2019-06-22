@@ -63,9 +63,21 @@ namespace Neo4jManager.ServiceInterface
 
             if (!string.IsNullOrEmpty(request.RestoreDumpFileUrl))
             {
-                var tempFile = await Neo4jManager.Helper.DownloadFileAsync(
-                    request.RestoreDumpFileUrl, 
-                    Path.GetTempPath());
+                // Force start to create initial databases/graph.db folder
+                await instance.Start(CancellationToken.None);
+                
+                string tempFile;
+                
+                if (Uri.IsWellFormedUriString(request.RestoreDumpFileUrl, UriKind.Absolute))
+                {
+                    tempFile = await Neo4jManager.Helper.DownloadFileAsync(
+                        request.RestoreDumpFileUrl, 
+                        Path.GetTempPath());
+                }
+                else
+                {
+                    tempFile = request.RestoreDumpFileUrl;
+                }
 
                 await instance.Restore(CancellationToken.None, tempFile);
             }

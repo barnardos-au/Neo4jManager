@@ -26,6 +26,9 @@ namespace Neo4jManager
         Backup,
 
         [Description("Restoring")]
-        Restore
+        Restore,
+        
+        [Description("Deleted")]
+        Deleted
     }
 }
