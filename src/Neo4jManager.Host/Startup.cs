@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Funq;
@@ -56,6 +57,7 @@ namespace Neo4jManager.Host
 
             AppSettings = new MultiAppSettingsBuilder()
                 .AddEnvironmentalVariables()
+                .AddTextFile(Path.Combine(AppContext.BaseDirectory, "app.settings"))
                 .AddDictionarySettings(new Dictionary<string, string>
                 {
                     { AppSettingsKeys.Versions, versions }
@@ -68,16 +70,12 @@ namespace Neo4jManager.Host
             var builder = new ContainerBuilder();
 
             builder.RegisterType<FileCopy>().AsImplementedInterfaces();
-            builder.Register(ctx => new Neo4jManagerConfig
-            {
-                Neo4jBasePath = @"c:\Neo4jManager",
-                StartBoltPort = 7691,
-                StartHttpPort = 7401
-            }).AsImplementedInterfaces();
+            builder.RegisterType<WatchdogService>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ZuluJavaResolver>().AsImplementedInterfaces();
             builder.RegisterType<Neo4jInstanceFactory>().AsImplementedInterfaces();
             builder.RegisterType<Neo4jV3JavaInstanceProvider>().AsImplementedInterfaces().AsSelf();
             builder.RegisterType<Neo4jDeploymentsPool>().AsImplementedInterfaces().SingleInstance();
+            builder.Register(ctx => AppSettings).AsImplementedInterfaces().SingleInstance();
             builder.Register(ctx => LogManager.LogFactory.GetLogger(typeof(IService))).AsImplementedInterfaces();
             
             IContainerAdapter adapter = new AutofacIocAdapter(builder.Build());
@@ -113,24 +111,33 @@ namespace Neo4jManager.Host
         {
             base.OnAfterInit();
 
-            var config = Container.Resolve<INeo4jManagerConfig>();
             var logger = Container.Resolve<ILog>();
+            var appSettings = Container.Resolve<IAppSettings>();
             
             try
             {
-                if (!Directory.Exists(config.DeploymentsBasePath)) return;
-                
-                logger.Debug($"Clearing folder {config.DeploymentsBasePath}");
-                Directory.Delete(config.DeploymentsBasePath, true);
+                var basePath = appSettings.DeploymentsBasePath();
+                if (Directory.Exists(basePath))
+                {
+                    logger.Debug($"Clearing folder {basePath}");
+                    Directory.Delete(basePath, true);
+                }
             }
             catch (Exception e)
             {
                 logger.Error(e);
             }
+            
+            var watchdog = Container.Resolve<IWatchdogService>();
+
+            watchdog.StartAsync(CancellationToken.None).Wait();
         }
         
         protected override void Dispose(bool disposing)
         {
+            var watchdog = Container.Resolve<IWatchdogService>();
+            watchdog.StopAsync(CancellationToken.None).Wait();
+
             var pool = Container.Resolve<INeo4jDeploymentsPool>();
             pool.DeleteAll(true);
         }

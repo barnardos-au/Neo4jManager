@@ -28,7 +28,13 @@ namespace Neo4jManager.Tests
             AppSettings = new MultiAppSettingsBuilder()
                 .AddDictionarySettings(new Dictionary<string, string>
                 {
-                    { AppSettingsKeys.Versions, versionsJsv }
+                    { AppSettingsKeys.Versions, versionsJsv },
+                    { AppSettingsKeys.Neo4jBasePath, @"c:\Neo4jManager" },
+                    { AppSettingsKeys.StartBoltPort, "7691" },
+                    { AppSettingsKeys.StartHttpPort, "7401" },
+                    { AppSettingsKeys.WatchDogInterval, "00:01:00" },
+                    { AppSettingsKeys.DefaultLeasePeriod, "00:05:00" },
+                    { AppSettingsKeys.ExpiryPeriod, "00:05:00" },
                 })
                 .Build();
         }
@@ -38,16 +44,11 @@ namespace Neo4jManager.Tests
             var builder = new ContainerBuilder();
 
             builder.RegisterType<FileCopy>().AsImplementedInterfaces();
-            builder.Register(ctx => new Neo4jManagerConfig
-            {
-                Neo4jBasePath = @"c:\Neo4jManager",
-                StartBoltPort = 7691,
-                StartHttpPort = 7401
-            }).AsImplementedInterfaces();
             builder.RegisterType<ZuluJavaResolver>().AsImplementedInterfaces();
             builder.RegisterType<Neo4jInstanceFactory>().AsImplementedInterfaces();
             builder.RegisterType<Neo4jV3JavaInstanceProvider>().AsImplementedInterfaces().AsSelf();
             builder.RegisterType<Neo4jDeploymentsPool>().AsImplementedInterfaces().SingleInstance();
+            builder.Register(ctx => AppSettings).AsImplementedInterfaces().SingleInstance();
             builder.Register(ctx => LogManager.LogFactory.GetLogger(typeof(IService))).AsImplementedInterfaces();
         
             IContainerAdapter adapter = new AutofacIocAdapter(builder.Build());

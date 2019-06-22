@@ -4,11 +4,6 @@ using ServiceStack.Configuration;
 
 namespace Neo4jManager.ServiceInterface
 {
-    public static class AppSettingsKeys
-    {
-        public const string Versions = "versions";
-    }
-    
     public static class AppSettingsExtensions
     {
         // ReSharper disable once InconsistentNaming

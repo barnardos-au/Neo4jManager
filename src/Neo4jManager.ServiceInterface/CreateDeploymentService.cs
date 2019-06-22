@@ -29,9 +29,11 @@ namespace Neo4jManager.ServiceInterface
             var version = appSettings.Neo4jVersions()
                 .Single(v => v.VersionNumber == request.Version);
 
+            var defaultLeasePeriod = appSettings.Get<TimeSpan>(AppSettingsKeys.DefaultLeasePeriod);
+
             var neo4jDeploymentRequest = new Neo4jDeploymentRequest
             {
-                LeasePeriod = request.LeasePeriod ?? TimeSpan.FromHours(2),
+                LeasePeriod = request.LeasePeriod ?? defaultLeasePeriod,
                 Version = new Neo4jVersion
                 {
                     Architecture = (Neo4jArchitecture) Enum.Parse(typeof(Neo4jArchitecture), version.Architecture),
