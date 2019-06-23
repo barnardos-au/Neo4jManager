@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager", "Neo4jManager\Neo4jManager.csproj", "{9C7C4D77-8865-4D99-9972-C4732471D635}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager.Client", "Neo4jManager.Client\Neo4jManager.Client.csproj", "{965BD7B2-1F09-4AA8-9BA5-D851243398C0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager.ServiceModel", "Neo4jManager.ServiceModel\Neo4jManager.ServiceModel.csproj", "{D2C9F3BD-A6C2-43D0-AACF-63062ED628F1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager.ServiceInterface", "Neo4jManager.ServiceInterface\Neo4jManager.ServiceInterface.csproj", "{A3C0C119-23EC-48F8-81A9-0C01BE72B92F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager.Host", "Neo4jManager.Host\Neo4jManager.Host.csproj", "{3FFCDAF7-74C7-441B-A9CD-9998EA88195C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neo4jManager.Tests", "Neo4jManager.Tests\Neo4jManager.Tests.csproj", "{5261353E-DAE8-4F34-B1B6-79E9309C01FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9C7C4D77-8865-4D99-9972-C4732471D635}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C7C4D77-8865-4D99-9972-C4732471D635}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C7C4D77-8865-4D99-9972-C4732471D635}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C7C4D77-8865-4D99-9972-C4732471D635}.Release|Any CPU.Build.0 = Release|Any CPU
+		{965BD7B2-1F09-4AA8-9BA5-D851243398C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{965BD7B2-1F09-4AA8-9BA5-D851243398C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{965BD7B2-1F09-4AA8-9BA5-D851243398C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{965BD7B2-1F09-4AA8-9BA5-D851243398C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2C9F3BD-A6C2-43D0-AACF-63062ED628F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2C9F3BD-A6C2-43D0-AACF-63062ED628F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2C9F3BD-A6C2-43D0-AACF-63062ED628F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2C9F3BD-A6C2-43D0-AACF-63062ED628F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3C0C119-23EC-48F8-81A9-0C01BE72B92F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3C0C119-23EC-48F8-81A9-0C01BE72B92F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3C0C119-23EC-48F8-81A9-0C01BE72B92F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3C0C119-23EC-48F8-81A9-0C01BE72B92F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FFCDAF7-74C7-441B-A9CD-9998EA88195C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FFCDAF7-74C7-441B-A9CD-9998EA88195C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FFCDAF7-74C7-441B-A9CD-9998EA88195C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FFCDAF7-74C7-441B-A9CD-9998EA88195C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5261353E-DAE8-4F34-B1B6-79E9309C01FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5261353E-DAE8-4F34-B1B6-79E9309C01FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5261353E-DAE8-4F34-B1B6-79E9309C01FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5261353E-DAE8-4F34-B1B6-79E9309C01FD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {08411D29-D280-494B-B110-1E5B374BE69D}
+	EndGlobalSection
+EndGlobal
