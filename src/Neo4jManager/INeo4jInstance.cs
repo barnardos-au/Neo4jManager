@@ -13,9 +13,9 @@ namespace Neo4jManager
         Task Restart(CancellationToken token);
         Task Clear(CancellationToken token);
         Task Backup(CancellationToken token);
-        Task Restore(CancellationToken token, string sourcePath);
+        Task Restore(CancellationToken token, string sourcePathOrUrl);
         void Configure(string configFile, string key, string value);
-        void DownloadPlugin(string pluginUrl);
+        void InstallPlugin(string sourcePathOrUrl);
 
         INeo4jDeployment Deployment { get; }
         Status Status { get; }

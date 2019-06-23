@@ -106,10 +106,22 @@ namespace Neo4jManager.V3
             configEditors[configFile].SetValue(key, value);
         }
 
-        public void DownloadPlugin(string pluginUrl)
+        public void InstallPlugin(string sourcePathOrUrl)
         {
             var pluginsFolder = Path.Combine(request.Neo4jFolder, "plugins");
-            Helper.DownloadFile(pluginUrl, pluginsFolder);
+
+            if (Uri.IsWellFormedUriString(sourcePathOrUrl, UriKind.Absolute))
+            {
+                Helper.DownloadFile(
+                    sourcePathOrUrl, 
+                    pluginsFolder);
+            }
+            else
+            {
+                var destinationPath = Path.Combine(pluginsFolder, new FileInfo(sourcePathOrUrl).Name);
+
+                File.Copy(sourcePathOrUrl, destinationPath);
+            }
         }
 
         public async Task Clear(CancellationToken token)
@@ -153,13 +165,26 @@ namespace Neo4jManager.V3
             }
         }
 
-        public async Task Restore(CancellationToken token, string sourcePath)
+        public async Task Restore(CancellationToken token, string sourcePathOrUrl)
         {
+            string localFile;
+                
+            if (Uri.IsWellFormedUriString(sourcePathOrUrl, UriKind.Absolute))
+            {
+                localFile = await Helper.DownloadFileAsync(
+                    sourcePathOrUrl, 
+                    Path.GetTempPath());
+            }
+            else
+            {
+                localFile = sourcePathOrUrl;
+            }
+
             await StopWhile(token, () =>
             {
                 Status = Status.Restore;
 
-                var arguments = GetLoadArguments(sourcePath);
+                var arguments = GetLoadArguments(localFile);
                 using (var dumpProcess = GetProcess(arguments))
                 {
                     dumpProcess.StartInfo.WorkingDirectory = request.Neo4jFolder;

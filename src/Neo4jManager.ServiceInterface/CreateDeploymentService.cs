@@ -54,7 +54,7 @@ namespace Neo4jManager.ServiceInterface
             {
                 if (!p.IsEmpty())
                 {
-                    instance.DownloadPlugin(p);
+                    instance.InstallPlugin(p);
                 }
             });
 
@@ -67,21 +67,8 @@ namespace Neo4jManager.ServiceInterface
             {
                 // Force start to create initial databases/graph.db folder
                 await instance.Start(CancellationToken.None);
-                
-                string tempFile;
-                
-                if (Uri.IsWellFormedUriString(request.RestoreDumpFileUrl, UriKind.Absolute))
-                {
-                    tempFile = await Neo4jManager.Helper.DownloadFileAsync(
-                        request.RestoreDumpFileUrl, 
-                        Path.GetTempPath());
-                }
-                else
-                {
-                    tempFile = request.RestoreDumpFileUrl;
-                }
 
-                await instance.Restore(CancellationToken.None, tempFile);
+                await instance.Restore(CancellationToken.None, request.RestoreDumpFileUrl);
             }
         
             if (request.AutoStart)
