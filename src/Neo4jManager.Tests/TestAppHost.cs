@@ -1,12 +1,15 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using Autofac;
 using Funq;
 using Neo4jManager.ServiceInterface;
-using Neo4jManager.ServiceModel;
 using Neo4jManager.V3;
 using ServiceStack;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using Version = Neo4jManager.ServiceModel.Version;
 
 namespace Neo4jManager.Tests
 {
@@ -44,6 +47,7 @@ namespace Neo4jManager.Tests
             var builder = new ContainerBuilder();
 
             builder.RegisterType<FileCopy>().AsImplementedInterfaces();
+            builder.RegisterType<WatchdogService>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ZuluJavaResolver>().AsImplementedInterfaces();
             builder.RegisterType<Neo4jInstanceFactory>().AsImplementedInterfaces();
             builder.RegisterType<Neo4jV3JavaInstanceProvider>().AsImplementedInterfaces().AsSelf();
@@ -57,6 +61,15 @@ namespace Neo4jManager.Tests
             LogManager.LogFactory = new ConsoleLogFactory(); 
 
             Plugins.Add(new CancellableRequestsFeature());
+        }
+
+        public override void OnAfterInit()
+        {
+            base.OnAfterInit();
+            
+            var watchdog = Container.Resolve<IWatchdogService>();
+
+            watchdog.StartAsync(CancellationToken.None).Wait();
         }
 
         protected override void Dispose(bool disposing)

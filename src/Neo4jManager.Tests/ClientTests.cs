@@ -280,20 +280,5 @@ namespace Neo4jManager.Tests
 
             await client.DeleteAsync(deployment.Id);
         }
-        
-        private async Task AssertRestoredDatabase(string boltEndpoint)
-        {
-            using (var driver = GraphDatabase.Driver(boltEndpoint))
-            {
-                using(var session = driver.Session())
-                {
-                    var result = await session.RunAsync("MATCH (p:Person) RETURN p.FirstName as FirstName, p.LastName AS LastName");
-                    var record = await result.SingleAsync();
-                    
-                    Assert.AreEqual("Foo", record["FirstName"].As<string>());
-                    Assert.AreEqual("Bar", record["LastName"].As<string>());
-                }
-            }
-        }
     }
 }

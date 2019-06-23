@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 
-namespace Neo4jManager.Host
+namespace Neo4jManager
 {
-    internal class WatchdogService : IWatchdogService, IDisposable
+    public class WatchdogService : IWatchdogService, IDisposable
     {
         private readonly ILog logger;
         private readonly IAppSettings appSettings;
@@ -48,28 +48,28 @@ namespace Neo4jManager.Host
         private async Task CheckForExpiration(CancellationToken cancellationToken)
         {
             logger.Info("Watchdog checking for expired leases");
-            
-            foreach (var (key, value) in pool)
-            {
-                if (!value.Deployment.IsExpired()) continue;
 
-                if (value.Status != Status.Deleted)
+            foreach (var kvp in pool)
+            {
+                if (!kvp.Value.Deployment.IsExpired()) continue;
+
+                if (kvp.Value.Status != Status.Deleted)
                 {
-                    logger.Info($"Deployment {key} expired on {DateTime.UtcNow}");
-                    logger.Info($"Backup {key}");
-                    await pool[key].Backup(cancellationToken);
-                    logger.Info($"Deleting {key}");
-                    pool.Delete(key, false);
+                    logger.Info($"Deployment {kvp.Key} expired on {DateTime.UtcNow}");
+                    logger.Info($"Backup {kvp.Key}");
+                    await pool[kvp.Key].Backup(cancellationToken);
+                    logger.Info($"Deleting {kvp.Key}");
+                    pool.Delete(kvp.Key, false);
                     
                     continue;
                 }
 
                 var expiryInstanceCleanup = appSettings.Get<TimeSpan>(AppSettingsKeys.ExpiryPeriod).TotalSeconds;
 
-                if (DateTime.UtcNow > value.Deployment.ExpiresOn.GetValueOrDefault().AddSeconds(expiryInstanceCleanup))
+                if (DateTime.UtcNow > kvp.Value.Deployment.ExpiresOn.GetValueOrDefault().AddSeconds(expiryInstanceCleanup))
                 {
-                    logger.Info($"Expired deployment {key} deleted on {DateTime.UtcNow}");
-                    pool.Delete(key, true);
+                    logger.Info($"Expired deployment {kvp.Key} deleted on {DateTime.UtcNow}");
+                    pool.Delete(kvp.Key, true);
                 }
             }
         }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Neo4j.Driver.V1;
 using Neo4jManager.ServiceModel;
 using NUnit.Framework;
 using ServiceStack;
@@ -13,20 +12,10 @@ namespace Neo4jManager.Tests
     [TestFixture]
     public class IntegrationTest : IntegrationFixtureBase
     {
-        private IServiceClient client;
-
-        [OneTimeSetUp]
-        protected override void OneTimeSetUp()
-        {
-            base.OneTimeSetUp();
-            
-            client = new JsonServiceClient(BaseUri);
-        }
-      
         [Test]
         public async Task Can_Install_And_Start()
         {
-            var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
+            var deploymentResponse = await ServiceClient.PostAsync(new CreateDeploymentRequest
             {
                 Version = "3.5.3",
                 LeasePeriod = TimeSpan.FromMinutes(10)
@@ -46,7 +35,7 @@ namespace Neo4jManager.Tests
             Assert.IsNull(deployment.Endpoints.HttpsEndpoint);
             Assert.AreEqual("Stopped", deployment.Status);
 
-            var controlResponse = await client.PostAsync(new ControlRequest
+            var controlResponse = await ServiceClient.PostAsync(new ControlRequest
             {
                 Id = deployment.Id,
                 Operation = Operation.Start
@@ -66,7 +55,7 @@ namespace Neo4jManager.Tests
             Assert.IsNull(deployment.Endpoints.HttpsEndpoint);
             Assert.AreEqual("Started", deployment.Status);
             
-            controlResponse = await client.PostAsync(new ControlRequest
+            controlResponse = await ServiceClient.PostAsync(new ControlRequest
             {
                 Id = deployment.Id,
                 Operation = Operation.Stop
@@ -84,7 +73,7 @@ namespace Neo4jManager.Tests
         [Test]
         public async Task Can_Backup()
         {
-            var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
+            var deploymentResponse = await ServiceClient.PostAsync(new CreateDeploymentRequest
             {
                 Version = "3.5.3",
                 AutoStart = true
@@ -94,7 +83,7 @@ namespace Neo4jManager.Tests
 
             var deployment = deploymentResponse.Deployment;
 
-            using (var backupResponse = await client.PostAsync(new BackupRequest
+            using (var backupResponse = await ServiceClient.PostAsync(new BackupRequest
             {
                 Id = deployment.Id
             }))
@@ -109,7 +98,7 @@ namespace Neo4jManager.Tests
         [Test]
         public async Task Can_Restore()
         {
-            var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
+            var deploymentResponse = await ServiceClient.PostAsync(new CreateDeploymentRequest
             {
                 Version = "3.5.3",
                 AutoStart = true
@@ -121,14 +110,14 @@ namespace Neo4jManager.Tests
 
             var dumpFile = Path.Combine(AppContext.BaseDirectory, "dbbackup.dump"); 
             var dumpFileInfo = new FileInfo(dumpFile);
-            var restoreResponse = client.PostFile<DeploymentResponse>(
+            var restoreResponse = ServiceClient.PostFile<DeploymentResponse>(
                 $@"/deployment/{deployment.Id}/Restore", 
                 dumpFileInfo, 
                 "application/octet-stream");
             
             Assert.IsNotNull(restoreResponse);
                 
-            var controlResponse = await client.PostAsync(new ControlRequest
+            var controlResponse = await ServiceClient.PostAsync(new ControlRequest
             {
                 Id = deployment.Id,
                 Operation = Operation.Start
@@ -144,7 +133,7 @@ namespace Neo4jManager.Tests
         [Test]
         public async Task Can_Install_With_Specified_Dump_File_From_Url()
         {
-            var deploymentResponse = await client.PostAsync(new CreateDeploymentRequest
+            var deploymentResponse = await ServiceClient.PostAsync(new CreateDeploymentRequest
             {
                 Version = "3.5.3",
                 RestoreDumpFileUrl = Path.Combine(AppContext.BaseDirectory, "dbbackup.dump"),
@@ -172,7 +161,7 @@ namespace Neo4jManager.Tests
             var createTasks = new List<Task<DeploymentResponse>>();
             for (var i = 0; i < 4; i++)
             {
-                createTasks.Add(client.PostAsync(request));
+                createTasks.Add(ServiceClient.PostAsync(request));
             }
 
             await Task.WhenAll(createTasks);
@@ -189,29 +178,6 @@ namespace Neo4jManager.Tests
             foreach (var deployment in deployments)
             {
                 await DeleteDeployment(deployment.Id);
-            }
-        }
-
-        private async Task DeleteDeployment(string id)
-        {
-            await client.DeleteAsync(new DeploymentRequest
-            {
-                Id = id
-            });
-        }
-
-        private async Task AssertRestoredDatabase(string boltEndpoint)
-        {
-            using (var driver = GraphDatabase.Driver(boltEndpoint))
-            {
-                using(var session = driver.Session())
-                {
-                    var result = await session.RunAsync("MATCH (p:Person) RETURN p.FirstName as FirstName, p.LastName AS LastName");
-                    var record = await result.SingleAsync();
-                    
-                    Assert.AreEqual("Foo", record["FirstName"].As<string>());
-                    Assert.AreEqual("Bar", record["LastName"].As<string>());
-                }
             }
         }
     }
