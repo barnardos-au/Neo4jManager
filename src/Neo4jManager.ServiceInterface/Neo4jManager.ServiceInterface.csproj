@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="ServiceStack" Version="5.*" />
+    <PackageReference Include="System.Management" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>
