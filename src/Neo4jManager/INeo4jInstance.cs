@@ -19,5 +19,6 @@ namespace Neo4jManager
 
         INeo4jDeployment Deployment { get; }
         Status Status { get; }
+        short Offset { get; }
     }
 }

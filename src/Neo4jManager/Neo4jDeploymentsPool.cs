@@ -39,10 +39,21 @@ namespace Neo4jManager
 
             lock (_object)
             {
+                short offset = 0;
+                while (true)
+                {
+                    var instances = this.Where(i => i.Value.Offset == offset).Select(i => i.Value).ToList();
+                    if (instances.Count == 0 || instances.All(i => i.Status == Status.Deleted)) break;
+
+                    offset++;
+                }
+
+                request.Offset = offset;
+
                 request.Endpoints = new Neo4jEndpoints
                 {
-                    HttpEndpoint = new Uri($"http://localhost:{appSettings.Get<long>(AppSettingsKeys.StartHttpPort) + Count}"),
-                    BoltEndpoint = new Uri($"bolt://localhost:{appSettings.Get<long>(AppSettingsKeys.StartBoltPort) + Count}"),
+                    HttpEndpoint = new Uri($"http://localhost:{appSettings.Get<long>(AppSettingsKeys.StartHttpPort) + offset}"),
+                    BoltEndpoint = new Uri($"bolt://localhost:{appSettings.Get<long>(AppSettingsKeys.StartBoltPort) + offset}"),
                 };
 
                 var instance = neo4jInstanceFactory.Create(request);
@@ -66,7 +77,7 @@ namespace Neo4jManager
             var targetDeploymentPath = GetDeploymentPath(id);
             Helper.SafeDelete(targetDeploymentPath);
             
-            TryRemove(id, out instance);
+            TryRemove(id, out _);
         }
 
         public void DeleteAll(bool permanent)

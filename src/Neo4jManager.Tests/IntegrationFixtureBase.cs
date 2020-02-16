@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Neo4j.Driver.V1;
+using Neo4j.Driver;
 using Neo4jManager.ServiceModel;
 using NUnit.Framework;
 using ServiceStack;
@@ -53,13 +53,18 @@ namespace Neo4jManager.Tests
         {
             using (var driver = GraphDatabase.Driver(boltEndpoint))
             {
-                using(var session = driver.Session())
+                var session = driver.AsyncSession();
+                try
                 {
                     var result = await session.RunAsync("MATCH (p:Person) RETURN p.FirstName as FirstName, p.LastName AS LastName");
                     var record = await result.SingleAsync();
                     
                     Assert.AreEqual("Foo", record["FirstName"].As<string>());
                     Assert.AreEqual("Bar", record["LastName"].As<string>());
+                }
+                finally
+                {
+                    await session.CloseAsync();
                 }
             }
         }

@@ -201,7 +201,8 @@ namespace Neo4jManager.V3
 
         public Status Status { get; private set; } = Status.Stopped;
 
-        
+        public short Offset => request.Offset;
+
         public void Dispose()
         {
             AsyncHelper.RunSync(() => Stop(CancellationToken.None));

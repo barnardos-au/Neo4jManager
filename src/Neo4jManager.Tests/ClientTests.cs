@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Neo4j.Driver.V1;
+using Neo4j.Driver;
 using Neo4jManager.Client;
 using NUnit.Framework;
 using ServiceStack;
@@ -181,9 +181,15 @@ namespace Neo4jManager.Tests
             {
                 using (var driver = GraphDatabase.Driver(restartedDeployment.Endpoints.BoltEndpoint))
                 {
-                    using(var session = driver.Session())
+
+                    var session = driver.AsyncSession();
+                    try
                     {
                         await session.RunAsync("CREATE (t:Test)");
+                    }
+                    finally
+                    {
+                        await session.CloseAsync();
                     }
                 }
             });
@@ -203,13 +209,18 @@ namespace Neo4jManager.Tests
 
             using (var driver = GraphDatabase.Driver(deployment.Endpoints.BoltEndpoint))
             {
-                using (var session = driver.Session())
+                var session = driver.AsyncSession();
+                try
                 {
                     await session.RunAsync("CREATE (t:Test { Name: 'Foo'})");
                     var result = await session.RunAsync("MATCH (t:Test) RETURN COUNT(t) AS NodeCount");
                     var record = await result.SingleAsync();
 
                     Assert.AreEqual(1, record["NodeCount"].As<int>());
+                }
+                finally
+                {
+                    await session.CloseAsync();
                 }
             }
 
@@ -219,12 +230,17 @@ namespace Neo4jManager.Tests
             // Assert
             using (var driver = GraphDatabase.Driver(deployment.Endpoints.BoltEndpoint))
             {
-                using (var session = driver.Session())
+                var session = driver.AsyncSession();
+                try
                 {
                     var result = await session.RunAsync("MATCH (t:Test) RETURN COUNT(t) AS NodeCount");
                     var record = await result.SingleAsync();
                     
                     Assert.AreEqual(0, record["NodeCount"].As<int>());
+                }
+                finally
+                {
+                    await session.CloseAsync();
                 }
             }
 
