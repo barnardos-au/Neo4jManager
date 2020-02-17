@@ -68,9 +68,11 @@ namespace Neo4jManager.V3
                 return;
             }
 
-            if (!process.HasExited) return;
+            if (process.HasExited)
+            {
+                process.Start();
+            }
             
-            process.Start();
             await deployment.WaitForReady(token);
             Status = Status.Started;
         }
@@ -133,6 +135,8 @@ namespace Neo4jManager.V3
                 Status = Status.Clearing;
 
                 Directory.Delete(dataPath, true);
+                
+                return Task.CompletedTask;
             });
         }
 
@@ -159,6 +163,8 @@ namespace Neo4jManager.V3
                     }
                     
                     Status = Status.Stopped;
+                    
+                    return Task.CompletedTask;
                 });
 
                 deployment.LastBackupFile = destinationPath;
@@ -180,7 +186,7 @@ namespace Neo4jManager.V3
                 localFile = sourcePathOrUrl;
             }
 
-            await StopWhile(token, () =>
+            await StopWhile(token, () => 
             {
                 Status = Status.Restore;
 
@@ -192,8 +198,10 @@ namespace Neo4jManager.V3
                     dumpProcess.Start();
                     dumpProcess.WaitForExit();
                 }
-                
+
                 Status = Status.Stopped;
+                
+                return Task.CompletedTask;
             });
         }
 
@@ -201,7 +209,8 @@ namespace Neo4jManager.V3
 
         public Status Status { get; private set; } = Status.Stopped;
 
-        
+        public short Offset => request.Offset;
+
         public void Dispose()
         {
             AsyncHelper.RunSync(() => Stop(CancellationToken.None));
@@ -211,13 +220,13 @@ namespace Neo4jManager.V3
             Status = Status.Deleted;
         }
 
-        private async Task StopWhile(CancellationToken token, Action action)
+        private async Task StopWhile(CancellationToken token, Func<Task> action)
         {
             var wasRunning = Status == Status.Started || Status == Status.Starting;
             
             await Stop(token);
 
-            await Task.Run(action, token);
+            await action.Invoke();
 
             if (wasRunning)
             {

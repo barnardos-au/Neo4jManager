@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <DebugType>portable</DebugType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
@@ -10,15 +9,18 @@
     <ProjectReference Include="..\Neo4jManager.Client\Neo4jManager.Client.csproj" />
     <ProjectReference Include="..\Neo4jManager.ServiceInterface\Neo4jManager.ServiceInterface.csproj" />
     <ProjectReference Include="..\Neo4jManager.ServiceModel\Neo4jManager.ServiceModel.csproj" />
-    <PackageReference Include="Autofac" Version="4.9.2" />
-    <PackageReference Include="MedallionShell" Version="1.6.0" />
-    <PackageReference Include="Neo4j.Driver" Version="1.7.2" />
+    <PackageReference Include="Autofac" Version="4.9.4" />
+    <PackageReference Include="MedallionShell" Version="1.6.1" />
+    <PackageReference Include="Neo4j.Driver" Version="4.0.0" />
 
-    <PackageReference Include="NUnit" Version="3.10.*" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.10.*" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.0" />
-    <PackageReference Include="ServiceStack" Version="5.*" />
-    <PackageReference Include="ServiceStack.Kestrel" Version="5.*" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="ServiceStack" Version="5.8.0" />
+    <PackageReference Include="ServiceStack.Kestrel" Version="5.8.0" />
   </ItemGroup>
 
   <ItemGroup>

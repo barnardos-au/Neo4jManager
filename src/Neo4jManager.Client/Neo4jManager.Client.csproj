@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Client" Version="5.5.0" />
+    <PackageReference Include="ServiceStack.Client" Version="5.8.0" />
   </ItemGroup>
 
   <ItemGroup>

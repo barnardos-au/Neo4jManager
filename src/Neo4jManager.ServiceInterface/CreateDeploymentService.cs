@@ -71,7 +71,8 @@ namespace Neo4jManager.ServiceInterface
                 await instance.Restore(CancellationToken.None, request.RestoreDumpFileUrl);
             }
         
-            if (request.AutoStart)
+            // No need to start if restoring a backup as the restore process needs to auto start due to file system requirements
+            if (request.AutoStart && string.IsNullOrEmpty(request.RestoreDumpFileUrl))
             {
                 await instance.Start(CancellationToken.None);
             }

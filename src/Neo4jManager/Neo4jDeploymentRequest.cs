@@ -9,5 +9,6 @@ namespace Neo4jManager
         public Neo4jEndpoints Endpoints { get; set; }
         public TimeSpan? LeasePeriod { get; set; }
         public string Neo4jFolder { get; set; }
+        public short Offset { get; set; }
     }
 }
