@@ -9,7 +9,7 @@
     <ProjectReference Include="..\Neo4jManager.Client\Neo4jManager.Client.csproj" />
     <ProjectReference Include="..\Neo4jManager.ServiceInterface\Neo4jManager.ServiceInterface.csproj" />
     <ProjectReference Include="..\Neo4jManager.ServiceModel\Neo4jManager.ServiceModel.csproj" />
-    <PackageReference Include="Autofac" Version="4.9.1" />
+    <PackageReference Include="Autofac" Version="4.9.4" />
     <PackageReference Include="MedallionShell" Version="1.6.1" />
     <PackageReference Include="Neo4j.Driver" Version="4.0.0" />
 
