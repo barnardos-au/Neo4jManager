@@ -42,8 +42,7 @@ namespace Neo4jManager
                 short offset = 0;
                 while (true)
                 {
-                    var instances = this.Where(i => i.Value.Offset == offset).Select(i => i.Value).ToList();
-                    if (instances.Count == 0 || instances.All(i => i.Status == Status.Deleted)) break;
+                    if (this.All(i => i.Value.Offset != offset)) break;
 
                     offset++;
                 }
