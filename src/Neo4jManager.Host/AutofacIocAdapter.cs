@@ -19,7 +19,12 @@ namespace Neo4jManager.Host
 
         public T TryResolve<T>()
         {
-            return container.TryResolve<T>(out var result) ? result : default;
+            if (container.TryResolve(typeof(T), out var result))
+            {
+                return (T)result;
+            }
+
+            return default;
         }
     }
 }
