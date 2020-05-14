@@ -9,6 +9,7 @@ using Funq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Neo4jManager.ServiceInterface;
 using Neo4jManager.ServiceModel;
 using Neo4jManager.V3;
@@ -28,7 +29,7 @@ namespace Neo4jManager.Host
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime appLifetime)
         {
             appLifetime.ApplicationStopped.Register(OnStopped);
             
@@ -49,7 +50,7 @@ namespace Neo4jManager.Host
     
     public class AppHost : AppHostBase
     {
-        public AppHost(IHostingEnvironment hostingEnvironment) : base("Neo4jManager", typeof(DeploymentService).Assembly)
+        public AppHost(IWebHostEnvironment webHostEnvironment) : base("Neo4jManager", typeof(DeploymentService).Assembly)
         {
             var versions = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "versions.json"))
                 .FromJson<IEnumerable<Version>>()
