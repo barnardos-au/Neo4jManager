@@ -1,6 +1,8 @@
 ﻿using ServiceStack;
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Neo4jManager.ServiceModel;
 using ServiceStack.Configuration;
@@ -27,9 +29,11 @@ namespace Neo4jManager.ServiceInterface
             var version = appSettings.Neo4jVersions()
                 .Single(v => v.VersionNumber == request.Version);
 
+            var defaultLeasePeriod = appSettings.Get<TimeSpan>(AppSettingsKeys.DefaultLeasePeriod);
+
             var neo4jDeploymentRequest = new Neo4jDeploymentRequest
             {
-                LeasePeriod = request.LeasePeriod ?? TimeSpan.FromHours(2),
+                LeasePeriod = request.LeasePeriod ?? defaultLeasePeriod,
                 Version = new Neo4jVersion
                 {
                     Architecture = (Neo4jArchitecture) Enum.Parse(typeof(Neo4jArchitecture), version.Architecture),
@@ -50,7 +54,7 @@ namespace Neo4jManager.ServiceInterface
             {
                 if (!p.IsEmpty())
                 {
-                    instance.DownloadPlugin(p);
+                    instance.InstallPlugin(p);
                 }
             });
 
@@ -59,14 +63,20 @@ namespace Neo4jManager.ServiceInterface
                 instance.Configure(s.ConfigFile, s.Key, s.Value);
             });
 
-            using (var cancellableRequest = Request.CreateCancellableRequest())
+            if (!string.IsNullOrEmpty(request.RestoreDumpFileUrl))
             {
-                if (request.AutoStart)
-                {
-                    await instance.Start(cancellableRequest.Token);
-                }
+                // Force start to create initial databases/graph.db folder
+                await instance.Start(CancellationToken.None);
+
+                await instance.Restore(CancellationToken.None, request.RestoreDumpFileUrl);
             }
-           
+        
+            // No need to start if restoring a backup as the restore process needs to auto start due to file system requirements
+            if (request.AutoStart && string.IsNullOrEmpty(request.RestoreDumpFileUrl))
+            {
+                await instance.Start(CancellationToken.None);
+            }
+            
             var keyedInstance = pool.SingleOrDefault(p => p.Key == id);
             
             return keyedInstance.ConvertTo<DeploymentResponse>();

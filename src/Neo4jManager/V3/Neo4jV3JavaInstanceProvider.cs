@@ -68,9 +68,11 @@ namespace Neo4jManager.V3
                 return;
             }
 
-            if (!process.HasExited) return;
+            if (process.HasExited)
+            {
+                process.Start();
+            }
             
-            process.Start();
             await deployment.WaitForReady(token);
             Status = Status.Started;
         }
@@ -79,7 +81,11 @@ namespace Neo4jManager.V3
         {
             Status = Status.Stopping;
 
-            if (process == null || process.HasExited) return;
+            if (process == null || process.HasExited)
+            {
+                Status = Status.Stopped;
+                return;
+            }
 
             if (Command.TryAttachToProcess(process.Id, out var command))
             {
@@ -102,10 +108,22 @@ namespace Neo4jManager.V3
             configEditors[configFile].SetValue(key, value);
         }
 
-        public void DownloadPlugin(string pluginUrl)
+        public void InstallPlugin(string sourcePathOrUrl)
         {
             var pluginsFolder = Path.Combine(request.Neo4jFolder, "plugins");
-            Helper.DownloadFile(pluginUrl, pluginsFolder);
+
+            if (Uri.IsWellFormedUriString(sourcePathOrUrl, UriKind.Absolute))
+            {
+                Helper.DownloadFile(
+                    sourcePathOrUrl, 
+                    pluginsFolder);
+            }
+            else
+            {
+                var destinationPath = Path.Combine(pluginsFolder, new FileInfo(sourcePathOrUrl).Name);
+
+                File.Copy(sourcePathOrUrl, destinationPath);
+            }
         }
 
         public async Task Clear(CancellationToken token)
@@ -117,12 +135,14 @@ namespace Neo4jManager.V3
                 Status = Status.Clearing;
 
                 Directory.Delete(dataPath, true);
+                
+                return Task.CompletedTask;
             });
         }
 
         public async Task Backup(CancellationToken token)
         {
-            var destinationPath = Path.Combine(deployment.BackupPath, $"{DateTime.UtcNow:yyyyMMddHHmmss}.dump");
+            var destinationPath = Path.Combine(deployment.BackupPath, Helper.GetTimeStampDumpFileName());
             
             var info = new FileInfo(destinationPath);
             if (!string.IsNullOrEmpty(info.DirectoryName))
@@ -143,19 +163,34 @@ namespace Neo4jManager.V3
                     }
                     
                     Status = Status.Stopped;
+                    
+                    return Task.CompletedTask;
                 });
 
                 deployment.LastBackupFile = destinationPath;
             }
         }
 
-        public async Task Restore(CancellationToken token, string sourcePath)
+        public async Task Restore(CancellationToken token, string sourcePathOrUrl)
         {
-            await StopWhile(token, () =>
+            string localFile;
+                
+            if (Uri.IsWellFormedUriString(sourcePathOrUrl, UriKind.Absolute))
+            {
+                localFile = await Helper.DownloadFileAsync(
+                    sourcePathOrUrl, 
+                    Path.GetTempPath());
+            }
+            else
+            {
+                localFile = sourcePathOrUrl;
+            }
+
+            await StopWhile(token, () => 
             {
                 Status = Status.Restore;
 
-                var arguments = GetLoadArguments(sourcePath);
+                var arguments = GetLoadArguments(localFile);
                 using (var dumpProcess = GetProcess(arguments))
                 {
                     dumpProcess.StartInfo.WorkingDirectory = request.Neo4jFolder;
@@ -163,8 +198,10 @@ namespace Neo4jManager.V3
                     dumpProcess.Start();
                     dumpProcess.WaitForExit();
                 }
-                
+
                 Status = Status.Stopped;
+                
+                return Task.CompletedTask;
             });
         }
 
@@ -172,21 +209,24 @@ namespace Neo4jManager.V3
 
         public Status Status { get; private set; } = Status.Stopped;
 
-        
+        public short Offset => request.Offset;
+
         public void Dispose()
         {
             AsyncHelper.RunSync(() => Stop(CancellationToken.None));
 
             process?.Dispose();
+
+            Status = Status.Deleted;
         }
 
-        private async Task StopWhile(CancellationToken token, Action action)
+        private async Task StopWhile(CancellationToken token, Func<Task> action)
         {
             var wasRunning = Status == Status.Started || Status == Status.Starting;
             
             await Stop(token);
 
-            await Task.Run(action, token);
+            await action.Invoke();
 
             if (wasRunning)
             {

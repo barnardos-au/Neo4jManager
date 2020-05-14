@@ -1,22 +1,30 @@
 using Autofac;
 using ServiceStack.Configuration;
 
-public class AutofacIocAdapter : IContainerAdapter
+namespace Neo4jManager.Host
 {
-    private readonly IContainer container;
-
-    public AutofacIocAdapter(IContainer container)
+    public class AutofacIocAdapter : IContainerAdapter
     {
-        this.container = container;
-    }
+        private readonly IContainer container;
 
-    public T Resolve<T>()
-    {
-        return container.Resolve<T>();
-    }
+        public AutofacIocAdapter(IContainer container)
+        {
+            this.container = container;
+        }
 
-    public T TryResolve<T>()
-    {
-        return container.TryResolve<T>(out var result) ? result : default;
+        public T Resolve<T>()
+        {
+            return container.Resolve<T>();
+        }
+
+        public T TryResolve<T>()
+        {
+            if (container.TryResolve(typeof(T), out var result))
+            {
+                return (T)result;
+            }
+
+            return default;
+        }
     }
 }

@@ -3,22 +3,23 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using ServiceStack.Configuration;
 
 namespace Neo4jManager
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jDeploymentsPool : ConcurrentDictionary<string, INeo4jInstance>, INeo4jDeploymentsPool
     {
+        private readonly IAppSettings appSettings;
         private static readonly object _object = new object();
         
-        private readonly INeo4jManagerConfig neo4JManagerConfig;
         private readonly INeo4jInstanceFactory neo4jInstanceFactory;
 
         public Neo4jDeploymentsPool(
-            INeo4jManagerConfig neo4JManagerConfig,
+            IAppSettings appSettings,
             INeo4jInstanceFactory neo4jInstanceFactory)
         {
-            this.neo4JManagerConfig = neo4JManagerConfig;
+            this.appSettings = appSettings;
             this.neo4jInstanceFactory = neo4jInstanceFactory;
         }
 
@@ -26,25 +27,32 @@ namespace Neo4jManager
         {
             var id = Guid.NewGuid().ToString();
             
-            Helper.Download(request.Version, neo4JManagerConfig.Neo4jBasePath);
-            Helper.Extract(request.Version, neo4JManagerConfig.Neo4jBasePath);
+            Helper.Download(request.Version, appSettings.GetString(AppSettingsKeys.Neo4jBasePath));
+            Helper.Extract(request.Version, appSettings.GetString(AppSettingsKeys.Neo4jBasePath));
 
-            var deploymentFolderName = Helper.GenerateValidFolderName(id);
-            if (string.IsNullOrEmpty(deploymentFolderName)) throw new ArgumentException("Error creating folder with given Id");
-
-            var targetDeploymentPath = Path.Combine(neo4JManagerConfig.DeploymentsBasePath, deploymentFolderName);
+            var targetDeploymentPath = GetDeploymentPath(id);
             Helper.SafeDelete(targetDeploymentPath);
-            Helper.CopyDeployment(request.Version, neo4JManagerConfig.Neo4jBasePath, targetDeploymentPath);
+            Helper.CopyDeployment(request.Version, appSettings.GetString(AppSettingsKeys.Neo4jBasePath), targetDeploymentPath);
 
             request.Neo4jFolder = Directory.GetDirectories(targetDeploymentPath)
                 .First(f => f.Contains(request.Version.Version, StringComparison.OrdinalIgnoreCase));
 
             lock (_object)
             {
+                short offset = 0;
+                while (true)
+                {
+                    if (this.All(i => i.Value.Offset != offset)) break;
+
+                    offset++;
+                }
+
+                request.Offset = offset;
+
                 request.Endpoints = new Neo4jEndpoints
                 {
-                    HttpEndpoint = new Uri($"http://localhost:{neo4JManagerConfig.StartHttpPort + Count}"),
-                    BoltEndpoint = new Uri($"bolt://localhost:{neo4JManagerConfig.StartBoltPort + Count}"),
+                    HttpEndpoint = new Uri($"http://localhost:{appSettings.Get<long>(AppSettingsKeys.StartHttpPort) + offset}"),
+                    BoltEndpoint = new Uri($"bolt://localhost:{appSettings.Get<long>(AppSettingsKeys.StartBoltPort) + offset}"),
                 };
 
                 var instance = neo4jInstanceFactory.Create(request);
@@ -58,28 +66,48 @@ namespace Neo4jManager
         public void Delete(string id, bool permanent)
         {
             var instance = this[id];
-            instance.Dispose();
-
-            if (!permanent) return;
-            
-            TryRemove(id, out instance);
-        }
-
-        public void DeleteAll(bool permanent)
-        {
-            foreach (var instance in Values)
+            if (instance.Status != Status.Deleted)
             {
                 instance.Dispose();
             }
 
             if (!permanent) return;
             
+            var targetDeploymentPath = GetDeploymentPath(id);
+            Helper.SafeDelete(targetDeploymentPath);
+            
+            TryRemove(id, out _);
+        }
+
+        public void DeleteAll(bool permanent)
+        {
+            foreach (var instance in Values.Where(i => i.Status != Status.Deleted))
+            {
+                instance.Dispose();
+            }
+
+            if (!permanent) return;
+
+            foreach (var key in Keys)
+            {
+                var targetDeploymentPath = GetDeploymentPath(key);
+                Helper.SafeDelete(targetDeploymentPath);
+            }
+
             Clear();
         }
 
         public void Dispose()
         {
             DeleteAll(true);
+        }
+
+        private string GetDeploymentPath(string id)
+        {
+            var deploymentFolderName = Helper.GenerateValidFolderName(id);
+            if (string.IsNullOrEmpty(deploymentFolderName)) throw new ArgumentException("Error creating folder with given Id");
+
+           return Path.Combine(appSettings.DeploymentsBasePath(), deploymentFolderName);
         }
     }
 }

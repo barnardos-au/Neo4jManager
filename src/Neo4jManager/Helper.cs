@@ -66,15 +66,32 @@ namespace Neo4jManager
             SafeAction(() => Directory.Delete(path, true));
         }
 
-        public static void DownloadFile(string downloadFileUrl, string destinationFolder)
+        public static string DownloadFile(string downloadFileUrl, string destinationFolder)
         {
             Console.WriteLine($"Downloading file from {downloadFileUrl}");
-            using (var webClient = new WebClient())
-            {
-                var uri = new Uri(downloadFileUrl);
-                var fileName = Path.GetFileName(uri.LocalPath);
-                webClient.DownloadFile(downloadFileUrl, $@"{destinationFolder}\{fileName}");
-            }
+            
+            var uri = new Uri(downloadFileUrl);
+            var fileName = Path.GetFileName(uri.LocalPath);
+            var path = Path.Combine(destinationFolder, fileName);
+            
+            var bytes = downloadFileUrl.GetBytesFromUrl();
+            File.WriteAllBytes(path, bytes);
+
+            return path;
+        }
+
+        public static async Task<string> DownloadFileAsync(string downloadFileUrl, string destinationFolder)
+        {
+            Console.WriteLine($"Downloading file from {downloadFileUrl}");
+            
+            var uri = new Uri(downloadFileUrl);
+            var fileName = Path.GetFileName(uri.LocalPath);
+            var path = Path.Combine(destinationFolder, fileName);
+            
+            var bytes = await downloadFileUrl.GetBytesFromUrlAsync();
+            File.WriteAllBytes(path, bytes);
+
+            return path;
         }
 
         public static void CopyDeployment(Neo4jVersion neo4jVersion, string neo4jBasePath, string targetDeploymentPath)
@@ -126,5 +143,7 @@ namespace Neo4jManager
 
             return tcs.Task;
         }
+        
+        public static string GetTimeStampDumpFileName() => $"{DateTime.UtcNow:yyyyMMddHHmmss}.dump";    
     }
 }

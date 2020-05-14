@@ -2,6 +2,7 @@ using System;
 
 namespace Neo4jManager
 {
+    // ReSharper disable once InconsistentNaming
     public class Neo4jDeployment : INeo4jDeployment
     {
         public Neo4jVersion Version { get; set; }

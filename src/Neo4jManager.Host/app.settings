@@ -1,0 +1,7 @@
+WatchDogInterval 00:01:00
+DefaultLeasePeriod 02:00:00
+ExpiryPeriod 1.00:00:00
+Neo4jBasePath c:\Neo4jManager
+StartBoltPort 7691
+StartHttpPort 7401
+StartHttpsPort 7501
