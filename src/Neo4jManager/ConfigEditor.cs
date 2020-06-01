@@ -29,6 +29,9 @@ namespace Neo4jManager
 
                 if (propKey == key)
                 {
+                    if (value == null)
+                        propKey = $"#{propKey}";
+                    
                     var newLine = $"{propKey}={value}";
                     newContent.Add(newLine);
                     updated = true;
