@@ -28,7 +28,7 @@ namespace Neo4jManager
                     const string configFile = Neo4jConfigFile;
                     instance.Configure(configFile, "dbms.security.auth_enabled", "false");
                     instance.Configure(configFile, "dbms.allow_format_migration", "true");
-                    instance.Configure(configFile, "dbms.directories.import", "");
+                    instance.Configure(configFile, "dbms.directories.import", null);
 
                     instance.Configure(configFile, "dbms.connector.http.listen_address", $":{request.Endpoints.HttpEndpoint.Port}");
 
