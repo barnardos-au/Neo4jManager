@@ -22,5 +22,17 @@
     "DownloadUrl": "https://neo4j.com/artifact.php?name=neo4j-community-3.5.3-windows.zip",
     "ZipFileName": "neo4j-community-3.5.3-windows.zip",
     "Architecture": "V3"
+  },
+  {
+    "VersionNumber": "3.5.11",
+    "DownloadUrl": "https://neo4j.com/artifact.php?name=neo4j-community-3.5.11-windows.zip",
+    "ZipFileName": "neo4j-community-3.5.11-windows.zip",
+    "Architecture": "V3"
+  },
+  {
+    "VersionNumber": "3.5.18",
+    "DownloadUrl": "https://neo4j.com/artifact.php?name=neo4j-community-3.5.18-windows.zip",
+    "ZipFileName": "neo4j-community-3.5.18-windows.zip",
+    "Architecture": "V3"
   }
 ]
